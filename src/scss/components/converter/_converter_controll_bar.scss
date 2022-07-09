@@ -1,0 +1,16 @@
+@import "../../helpers/helpers_all";
+
+.converter_controll_bar {
+  @extend %global_flex_block_row_wrap_flex-start_center;
+
+  margin: 0 -2rem -2rem 0;
+}
+
+.converter_controll_bar__field {
+  padding: 0 2rem 2rem 0;
+}
+
+.converter_controll_bar__btn {
+  @extend %accent_btn_1;
+  @extend %btn_size_1;
+}

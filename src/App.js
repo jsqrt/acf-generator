@@ -1,5 +1,6 @@
 import { Homepage } from "./pages";
 import { Routes, Route } from "react-router-dom";
+import './scss/main_global.scss';
 
 function App() {
 	return (
