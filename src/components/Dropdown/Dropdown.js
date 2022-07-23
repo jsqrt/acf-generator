@@ -13,6 +13,7 @@ const Dropdown = ({
         {checkboxes && checkboxes.length ? checkboxes.map(({
           id,
           label,
+          checked,
         }) => {
           return (
             <li className="dropdown__checkbox" key={id}>

@@ -1,7 +1,14 @@
-.form_input__label {
-	@extend %form_el_label;
+// .form_input__label {
+// 	@extend %form_el_label;
+// }
+
+// .form_input__element {
+// }
+
+.input {
+
 }
 
-.form_input__element {
+.input__in {
 	@extend %form_el_default;
 }

@@ -1,22 +1,46 @@
 @import "../helpers/helpers_all";
 
 .dropdown {
+  @extend %global_flex_block_column_wrap_flex-start_stretch;
+
   position: absolute;
+  top: 100%;
+
+  padding: 1.8rem 1.2rem;
+  width: 100%;
+  min-height: 30.4rem;
+
   opacity: 0;
+  pointer-events: none;
+
+  background-color: $white;
+  border-radius: $gl_radius;
+
+  color: $black;
 }
 
 .dropdown__checkboxes {
+  padding-right: .2rem;
 
+  &:not(:last-child) {
+    padding-bottom: 1.6rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid $gray;
+  }
 }
 
 .dropdown__checkbox {
-
+  &:not(:last-child) {
+	  margin-bottom: .6rem;
+  }
 }
 
 .dropdown__inputs {
-
+  margin-top: auto;
 }
 
 .dropdown__input {
-
+  &:not(:last-child) {
+    mix-blend-mode: .6rem;
+  }
 }

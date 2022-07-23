@@ -1,4 +1,4 @@
-import Homepage from "./Homepage.tsx";
+import Homepage from "./Homepage.js";
 
 export {
   Homepage,

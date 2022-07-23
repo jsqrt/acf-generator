@@ -1,4 +1,4 @@
-import Dropdown from './Dropdown.tsx';
+import Dropdown from './Dropdown.js';
 
 export {
   Dropdown,

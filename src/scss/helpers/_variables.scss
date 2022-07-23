@@ -11,6 +11,10 @@ $black: #000;
 $blue_1: #3252C7;
 $blue_2: #2F2E59;
 
+$gray: #D9D9D9;
+
+$shadow_1: 0px 4px 4px rgba(0, 0, 0, .25);
+
 $color_text_base: $white;
 $color_link_base:$blue_2;
 $body_bg: $blue_1;
@@ -30,7 +34,7 @@ $page_width: 144rem;
 //---------------------------------------------layout###
 
 //---------------------------------------------global values
-$gl_radius:.5rem;
+$gl_radius: 1rem;
 //---------------------------------------------global values###
 
 //---------------------------------------------media points
@@ -46,11 +50,11 @@ $point_8: 320px;
 
 //---------------------------------------------forms
 $input_height: 4rem;
-$input_offset: 0 2rem;
-$input_font_size: $font_size_base;
-$input_border_color: #ccc;
-$input_border_color_active: $black;
-$input_placeholder_color: rgba($black, .4);
-$input_text_color: $black;
-$input_radius: $gl_radius;
+$input_offset: 0 1rem;
+$input_font_size: 1.2rem;
+$input_border_color: transaprent;
+$input_border_color_active: transaprent;
+$input_placeholder_color: rgba($white, .6);
+$input_text_color: $white;
+$input_radius: 4px;
 //---------------------------------------------forms###

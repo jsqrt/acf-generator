@@ -15,7 +15,7 @@ const ConverterControllBar = () => {
 
   return (
     <div className="converter_controll_bar">
-      <div className="converter_controll_bar__field">
+      <div className="converter_controll_bar__field converter_controll_bar__field--ofset_mod">
        <ConverterSettings />
       </div>
       <div className="converter_controll_bar__field">

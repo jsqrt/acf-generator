@@ -6,7 +6,7 @@ const Button = ({
   mod = '',
   children,
 }) => {
-  const className : string = `buttton ${mod}`;
+  const className = `buttton ${mod}`;
 
   return (
     <button

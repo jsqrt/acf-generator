@@ -1,9 +1,13 @@
 @import "../../helpers/helpers_all";
 
 .converter {
+  @extend %global_flex_block_column_wrap_flex-start_center;
 
+  min-height: calc(100vh - var(--height-header));
 }
 
 .converter__in {
+  @extend %global_flex_block_column_wrap_flex-start_stretch;
 
+  flex: auto;
 }

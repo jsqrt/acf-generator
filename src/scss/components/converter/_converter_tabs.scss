@@ -1,0 +1,18 @@
+@import "../../helpers/helpers_all";
+
+
+.converter_tabs {
+  width: 100%;
+  height: 100%;
+}
+
+.converter_tabs__tab {
+  width: 100%;
+  height: 100%;
+
+  display: none;
+
+  &[data-active-tab=true] {
+    display: block;
+  }
+}

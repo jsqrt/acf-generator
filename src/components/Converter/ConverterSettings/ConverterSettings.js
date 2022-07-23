@@ -7,7 +7,7 @@ const ConverterSettings = () => {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const handleToggleDropdown = (e : MouseEvent) => {
+  const handleToggleDropdown = (e) => {
     e.preventDefault();
   };
 
@@ -41,7 +41,7 @@ const ConverterSettings = () => {
 
   return (
     <div className="converter_controll_bar_setting">
-      <Button mod="converter_controll_bar_setting__btn" handleClick={handleToggleDropdown}>Copy to clipboard</Button>
+      <Button mod="converter_controll_bar_setting__btn" handleClick={handleToggleDropdown}>Settings</Button>
       <Dropdown checkboxes={dropdown.checkboxes} inputs={dropdown.inputs} dropdownOpen={dropdownOpen}/>
     </div>
   );

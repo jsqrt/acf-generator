@@ -1,7 +1,9 @@
-import Checkbox from "./Checkbox.tsx";
-import Input from "./Checkbox.tsx";
+import Checkbox from "./Checkbox";
+import Input from "./Input";
+import Textarea from "./Textarea";
 
 export {
   Checkbox,
+  Textarea,
   Input,
 }

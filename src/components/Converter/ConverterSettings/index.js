@@ -1,4 +1,4 @@
-import ConverterSettings from './ConverterSettings.tsx';
+import ConverterSettings from './ConverterSettings.js';
 
 export {
   ConverterSettings,

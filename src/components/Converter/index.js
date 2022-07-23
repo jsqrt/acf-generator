@@ -1,4 +1,4 @@
-import Converter from './Converter.tsx';
+import Converter from './Converter.js';
 
 export {
   Converter,

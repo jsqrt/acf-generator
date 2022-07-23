@@ -1,0 +1,19 @@
+@import "../../helpers/helpers_all";
+
+
+.converter_workspace {
+  @extend %global_flex_block_row_wrap_flex-start_stretch;
+
+  margin: 0 -2rem -2rem 0;
+  flex: auto;
+  width: 100%;
+
+  align-content: stretch;
+}
+
+.converter_workspace__col {
+  @extend %global_flex_block_column_wrap_flex-start_stretch;
+
+  width: 50%;
+  padding: 0 2rem 2rem 0;
+}

@@ -1,4 +1,4 @@
-import ConverterControllBar from './ConverterControllBar.tsx';
+import ConverterControllBar from './ConverterControllBar.js';
 
 export {
   ConverterControllBar,

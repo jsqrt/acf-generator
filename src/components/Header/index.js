@@ -1,4 +1,4 @@
-import Header from "./Header.tsx";
+import Header from "./Header.js";
 
 export {
   Header,

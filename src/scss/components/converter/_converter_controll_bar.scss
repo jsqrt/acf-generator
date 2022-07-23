@@ -4,10 +4,19 @@
   @extend %global_flex_block_row_wrap_flex-start_center;
 
   margin: 0 -2rem -2rem 0;
+  width: 100%;
+
+  &:not(:last-child) {
+    padding-bottom: 2rem;
+  }
 }
 
 .converter_controll_bar__field {
   padding: 0 2rem 2rem 0;
+
+  &.converter_controll_bar__field--ofset_mod {
+    margin-right: auto;
+  }
 }
 
 .converter_controll_bar__btn {
