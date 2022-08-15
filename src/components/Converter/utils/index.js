@@ -40,7 +40,6 @@ export const createFieldConfig = ({
   label,
   type,
   fieldId,
-  updateFieldId,
   value,
   groupSubFields,
   pictureMixinKey,
@@ -50,7 +49,7 @@ export const createFieldConfig = ({
   fieldNames,
   varsInitializated,
 }) => {
-  const fieldKey = `field_${fieldId + 1}`;
+  const fieldKey = `field_${fieldId}`;
 
   const typeTabConfig = {
     "placement": "top",
@@ -118,6 +117,42 @@ export const createFieldConfig = ({
   };
 
   Object.assign(fieldConfig, defineTypeConfig());
-  updateFieldId(fieldId + 1);
-  insertPath[fieldId] = fieldConfig;
+  // updateFieldId(fieldId + 1);
+
+  return fieldConfig;
+};
+
+export const checkNodeContainsIgnoreClasses = (node, ignoreNodeClassNames) => {
+  return (node.classList && Array.from(node.classList)
+    .filter((str) => ignoreNodeClassNames
+      .filter((ignore) => str
+        .includes(ignore))
+          .length > 0)
+            .length > 0);
+};
+
+
+export const defineTextFieldLabel = (parent) => {
+  let fieldName = 'text';
+
+  Array.from(parent.classList).forEach((str) => {
+    if (str.includes('title')) fieldName = 'title';
+    if (str.includes('descr')) fieldName = 'descr';
+    if (str.includes('text')) fieldName = 'text';
+    if (str.includes('subtitle')) fieldName = 'subtitle';
+    if (str.includes('name')) fieldName = 'name';
+    if (str.includes('position')) fieldName = 'position';
+    if (str.includes('label')) fieldName = 'label';
+    if (str.includes('value')) fieldName = 'value';
+  });
+
+  return fieldName;
+}
+
+export const checkPHPVarsInitializated = (sectionObj, section) => {
+  if (!sectionObj.varsInitializated) {
+    const varsBlockCloseTag = '\n\t?>\n'
+    sectionObj.varsInitializated = true;
+    section.insertAdjacentHTML('afterbegin', varsBlockCloseTag);
+  }
 };

@@ -1,26 +1,35 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Textarea } from '../../Forms';
 
 import '../../../scss/components/converter/_converter_accordeon.scss';
-import { useState } from 'react';
 import classNames from 'classnames';
 
 const ConverterAccordeon = ({
-  list,
-  index
+  index,
+  sectionsData,
+  changeSectionsData,
 }) => {
-
   const [activeItem, setActiveItem] = useState(0);
+  const [sectionLabel, setSectionLabel] = useState('');
+
+  const handleChangeSectionLabel = (e, sectionKey) => {
+    const { target } = e;
+    const { value } = target;
+
+    sectionsData[sectionKey].label = value;
+  };
 
   return (
     <ul className='converter_accordeon'>
       {
-        list.map(({
-          phpOutput,
-          id,
-          placeholder,
-          disabled,
-        }, subIndex) => {
+        Object.keys(sectionsData).map((sectionKey, subIndex) => {
+          const {
+            phpOutput,
+            id,
+            placeholder,
+            disabled,
+            sectionLabel,
+          } = sectionsData[sectionKey];
 
           const itemClass = classNames('converter_accordeon__item', {
             'converter_accordeon__item--active_state': activeItem === subIndex,
@@ -29,7 +38,12 @@ const ConverterAccordeon = ({
           return (
             <li className={itemClass} key={`accordeon_item_${index}_${subIndex}`}>
               <div className="converter_accordeon__head" onClick={() => setActiveItem(subIndex)}>
-                <div className="converter_accordeon__title">Test</div>
+                <input
+                  className="converter_accordeon__title"
+                  key={`accordeon_item_head_title_${sectionLabel}_${index}_${subIndex}`}
+                  defaultValue={sectionLabel}
+                  onInput={(e) => handleChangeSectionLabel(e, sectionKey)}
+                />
               </div>
               <div className="converter_accordeon__dropdown">
                 <Textarea
@@ -37,6 +51,7 @@ const ConverterAccordeon = ({
                   placeholder={placeholder}
                   defaultValue={phpOutput}
                   disabled={disabled}
+                  key={`${phpOutput}${subIndex}`}
                 />
               </div>
             </li>
