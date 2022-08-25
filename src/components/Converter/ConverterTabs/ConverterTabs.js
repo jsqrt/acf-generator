@@ -32,7 +32,7 @@ const ConverterTabs = ({
 
             const sectionsList = fieldsData[currentPageIndex].fields; // брать данные из контекста
 
-            if (accordeon && Object.values(sectionsList).length) {
+            if (accordeon && Object.values(sectionsList)) {
               return (
                 <ConverterAccordeon
                   sectionsData={fieldsData[currentPageIndex].fields}

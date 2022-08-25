@@ -12,6 +12,7 @@ import {
   checkNodeContainsIgnoreClasses,
   defineTextFieldLabel,
   checkPHPVarsInitializated,
+  toUpperFirstLetter,
 } from '../utils';
 
 import '../../../scss/components/converter/_converter_workspace.scss';
@@ -65,22 +66,30 @@ const ConverterWorkspace = () => {
     const getField = ` \n\t\t${fieldVarName} = get_field('${fieldId}');`;
     const callField = `<?php echo ${fieldVarName}; ?>`;
 
+    const fieldLabel = `${fieldName}${fieldNames[fieldName] !== 1 ? ` ${fieldNames[fieldName]}` : ''}`;
+    let type;
+
+    switch (fieldName) {
+      case 'descr': type = 'wysiwyg'; break;
+      case 'text': type = 'wysiwyg'; break;
+      default: type = 'text';
+    }
+
     fieldsData[currentPageIndex]
       .fields[sectionKey]
-      .sub_fields[fieldId] = createFieldConfig({
-        insertPath: fieldsData[currentPageIndex].fields[sectionKey].sub_fields,
-        type: 'wysiwyg',
-        defaultValue: child.textContent,
+      .sub_fields.push(createFieldConfig({
+        type,
+        defaultValue: child.textContent !== '_reserved' ? child.textContent : '',
         name: fieldId,
-        label: `${fieldName}_${fieldNames[fieldName]}`,
+        label: toUpperFirstLetter(fieldLabel),
         fieldId: fieldKey,
-      });
+      }));
 
     section.insertAdjacentHTML('afterbegin', getField); // place variable
     child.textContent = callField; // place output field
   };
 
-  const createLinkField = (parent, child, sectionKey, section, fieldKey) => {
+  const createLinkField = (parent, child, sectionKey, section, fieldKey, currentNestingLevel) => {
     checkPHPVarsInitializated(fieldsData[currentPageIndex].fields[sectionKey], section);
 
     const {
@@ -95,16 +104,16 @@ const ConverterWorkspace = () => {
     const fieldVarName = `$${fieldName}_${fieldNames[fieldName]}`;
     const getField = ` \n\t\t${fieldVarName} = get_field('${fieldId}');`;
 
-    const varLinkUrl = `$link_url = ${fieldVarName}['url'];`
-    const varLinkTitle = `$link_title = ${fieldVarName}['title'];`
-    const varLinkTarget = `$link_target = ${fieldVarName}['target'] ? ${fieldVarName}['target'] : '_self';`
-    const variablesGroup = `<?php if (${fieldVarName}) {\n\t${varLinkUrl}\n\t${varLinkTitle}\n\t${varLinkTarget}\n ?&gt;\n`;
+    const varLinkUrl = `\n${'\t'.repeat(currentNestingLevel + 1)}$link_url = ${fieldVarName}['url'];`
+    const varLinkTitle = `\n${'\t'.repeat(currentNestingLevel + 1)}$link_title = ${fieldVarName}['title'];`
+    const varLinkTarget = `\n${'\t'.repeat(currentNestingLevel + 1)}$link_target = ${fieldVarName}['target'] ? ${fieldVarName}['target'] : '_self';`
+    const variablesGroup = `\n${'\t'.repeat(currentNestingLevel)}<?php if (${fieldVarName}) {${varLinkUrl}${varLinkTitle}${varLinkTarget}\n ${'\t'.repeat(currentNestingLevel)}?&gt;\n`;
 
     const callLinkUrl = `<?php echo esc_url($link_url); ?>`;
     const callLinkTarget = `<?php echo esc_attr($link_target); ?>`;
     const callLinkTitle = `<?php echo esc_html($link_title); ?>`;
 
-    const closeTag = `\n&lt;?php }; ?&gt;`;
+    const closeTag = `\n${'\t'.repeat(currentNestingLevel)}&lt;?php }; ?&gt;\n`;
 
     fieldsData[currentPageIndex]
       .fields[sectionKey]
@@ -139,18 +148,63 @@ const ConverterWorkspace = () => {
   //   });
   // };
 
-  const checkNestingText = (children) => { // if p span etc in text fields
-    return children.filter((child) => {
-      if (
-        (child.classList && !child.classList.length && child.nodeName !== 'SOURCE')
-        || (child.nodeName === '#text' && !(child.textContent.replace(/\s+/g, '')))
-      ) {
+  // # 1
+  // #text span
+  // Если текст контент
+
+  const textTags = ['A','P','SPAN','STRONG','B','I','BR','H1','H2','H3','H4','H5','H6','UL','OL','LI'];
+
+  const checkNodeOnText = (node) => {
+    const hasClassList = !!node.classList && !!node.classList.length;
+    const isTextTag = !!textTags.indexOf(node.nodeName);
+    return node.nodeName === '#text' || (isTextTag && !hasClassList);
+  }
+
+  const checkNestingText = (parent, children) => { // if p span etc in text fields, we replace these children with textNode
+    const nodesWithoutSpaces = children.filter((child, index) => {
+      const isText = checkNodeOnText(child);
+
+      if (isText && child.textContent.replace(/\s+/g, '') === '') {
         child.remove();
         return false;
-      } else {
-        return true;
       }
+
+      return true;
     });
+
+    let textCounter = 0;
+    const textNodeIndex = [];
+
+    const filteredNodesArray = nodesWithoutSpaces.filter((child, index) => {
+      const isText = checkNodeOnText(child);
+
+      if (isText) {
+        textCounter += 1;
+
+        if (textCounter === 1) {
+          const el = document.createTextNode('_reserved');
+          child.after(el);
+          textNodeIndex.push([el, index]);
+        }
+
+        child.remove();
+        return false;
+      }
+
+      return true;
+    });
+
+    if (textNodeIndex.length) {
+      textNodeIndex.forEach(([el, prevTextIndex]) => {
+        if (filteredNodesArray[prevTextIndex]) {
+          filteredNodesArray.splice(prevTextIndex, 0, el);
+        } else {
+          filteredNodesArray.push(el);
+        }
+      });
+    }
+
+    return filteredNodesArray;
   };
 
   const childrenIteration = (parent, sectionKey, section, fieldId = sectionKey, nestingLevel = 0) => {
@@ -159,11 +213,7 @@ const ConverterWorkspace = () => {
 
     if (!children.length) return newFieldKey;
 
-    // console.log('--------'); //!
-    // console.log(children); //!
-    // console.log('--------'); //!
-
-    children = checkNestingText(children);
+    children = checkNestingText(parent, children);
 
     children.forEach((child, childIndex) => {
       let currentNestingLevel = nestingLevel + 1;
@@ -180,8 +230,9 @@ const ConverterWorkspace = () => {
         createTextField(parent, child, sectionKey, section, newFieldKey);
       }
       else if (nodeName === 'A') {
-        createLinkField(parent, child, sectionKey, section, newFieldKey);
-        newFieldKey = childrenIteration(child, sectionKey, section, newFieldKey, currentNestingLevel);
+        newFieldKey += 1;
+        createLinkField(parent, child, sectionKey, section, newFieldKey, currentNestingLevel);
+        // newFieldKey = childrenIteration(child, sectionKey, section, newFieldKey, currentNestingLevel);
       }
       // else if (nodeName === 'PICTURE') {
       //   // newFieldKey += 1;
@@ -191,14 +242,9 @@ const ConverterWorkspace = () => {
         newFieldKey = childrenIteration(child, sectionKey, section, newFieldKey, currentNestingLevel);
       }
 
-      if (child.insertAdjacentHTML) {
-        child.insertAdjacentHTML('beforebegin', `\n${'\t'.repeat(currentNestingLevel)}`);
-        if (childIndex === children.length - 1) child.insertAdjacentHTML('afterend', `\n${'\t'.repeat(currentNestingLevel - 1)}`);
-      }
-
+      child.before(`\n${'\t'.repeat(currentNestingLevel)}`);
+      if (childIndex === children.length - 1) child.after(`\n${'\t'.repeat(currentNestingLevel - 1)}`);
     });
-
-    console.log('----------------------------'); //!
 
     return newFieldKey;
   };
@@ -225,45 +271,39 @@ const ConverterWorkspace = () => {
 
       if (classList[0]) {
         sectionSuggestedName = classList[0]; // match first valid class
-        const sectionSuggestedNameArr = sectionSuggestedName.split('');
-        sectionSuggestedNameArr[0] = sectionSuggestedNameArr[0].toUpperCase();
-        sectionLabel = sectionSuggestedNameArr.join('').replace(/_/g, ' '); // get section name
+        sectionLabel = toUpperFirstLetter(sectionSuggestedName); // get section name
       } else {
-        sectionSuggestedName = `section_${index}`;
+        sectionSuggestedName = `section_${index + 1}`;
         sectionLabel = `Section ${index + 1}`;
       }
 
-      // ПО ФАКТУ, ЭТО СЕЙЧАС НЕ НУЖНО. НУЖНО БУДЕТ ТОЛЬКО ПРИ СОЗДАНИИ JSON
-      // createFieldConfig({
-      //   insertPath: fieldsData[currentPageIndex].fields,
-      //   type: 'tab',
-      //   label: sectionLabel,
-      //   fieldId: currentFieldKey,
-      //   section: $sectionNode,
-      //   suggestedName: sectionSuggestedName,
-      // });
-
-
       fieldsData[currentPageIndex].fields[currentFieldKey] = createFieldConfig({
+        type: 'tab',
+        label: sectionLabel,
+        fieldId: currentFieldKey,
+        suggestedName: sectionSuggestedName,
+      });
+
+
+      fieldsData[currentPageIndex].fields[currentFieldKey + 1] = createFieldConfig({
         type: 'group',
         fieldName: sectionSuggestedName,
-        fieldId: currentFieldKey,
+        fieldId: currentFieldKey + 1,
         section: $sectionNode,
         sectionLabel,
-        label: sectionLabel,
         suggestedName: sectionSuggestedName,
         varsInitializated: false,
         fieldNames: {},
         groupSubFields: [],
       });
 
-      const newFieldKey = childrenIteration($sectionNode, currentFieldKey, $sectionNode);
+      const newFieldKey = childrenIteration($sectionNode, currentFieldKey + 1, $sectionNode);
 
       const varsBlockOpenTag = '\n\t<?php';
       $sectionNode.insertAdjacentHTML('afterbegin', varsBlockOpenTag);
 
       const phpOutput = $sectionNode.outerHTML.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/-->/gi, '').replace(/!--/gi, '');
-      fieldsData[currentPageIndex].fields[currentFieldKey].phpOutput = phpOutput;
+      fieldsData[currentPageIndex].fields[currentFieldKey + 1].phpOutput = phpOutput;
 
       currentFieldKey = newFieldKey + 1;
     });
@@ -291,16 +331,32 @@ const ConverterWorkspace = () => {
   return (
     <div className='converter_workspace'>
       <div className="converter_workspace__col">
-        <Textarea id="main_input" defaultValue="<section class='section about'>
-<h1 class='section section_title'>Title</h2>
-<p class='section section_descr'>Title</p>
-<img src='test image1' alt='image1' />
-<picture class='card__img'>
-  <source srcset='images/card__img.png.webp' type='image/webp'>
-  <source srcset='images/card__img.png' type='image/png'>
-  <img class='card__img_in' src='images/card__img.png' alt='card' loading='lazy'>
-</picture>
-</section>" handleInput={handleMainInput} />
+        <Textarea
+          id="main_input"
+          defaultValue="
+          <section class='section contacts'>
+            <div class='contacts__in'>
+              <div class='contacts__text fadeEl'>
+                <p>This expertise has seen us produce
+                  <strong> Europe’s largest 360 fan experience </strong>
+                  for Live Nation, transport ABC television audiences through time in a
+                  <strong> world first virtual reality experience, </strong>
+                  and produce the
+                  <strong> UK’s first immersive gym group for Studio Society.. </strong>
+                </p>
+                <p>And we’re not finished there. As our pioneering industry continues to break new ground, Pebble remains at the forefront of creative innovation and experiential storytelling</p>
+                <span class='contacts__decor'>123</span>
+              </div>
+            </div>
+          </section>"
+          // defaultValue="
+          // <section class='section'>
+          //  <p class='te'>2</p>
+          //   1
+          //  <p class='te'>2</p>
+          // </section>"
+          handleInput={handleMainInput}
+        />
       </div>
       <div className="converter_workspace__col">
         <ConverterTabs tabsArray={tabsArray} />

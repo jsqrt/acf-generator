@@ -40,12 +40,12 @@ export const createFieldConfig = ({
   label,
   type,
   fieldId,
-  value,
+  defaultValue,
   groupSubFields,
   pictureMixinKey,
-  fieldName,
   sectionLabel,
   suggestedName,
+  name,
   fieldNames,
   varsInitializated,
 }) => {
@@ -62,7 +62,7 @@ export const createFieldConfig = ({
   };
 
   const typeWysiwygConfig = {
-    "default_value": value,
+    "default_value": defaultValue,
     "tabs": "all",
     "toolbar": "full",
     "media_upload": 0,
@@ -70,7 +70,7 @@ export const createFieldConfig = ({
   };
 
   const typeTextareaConfig = {
-    "default_value": value,
+    "default_value": defaultValue,
     "placeholder": "",
     "maxlength": "",
     "rows": 4,
@@ -87,12 +87,12 @@ export const createFieldConfig = ({
 
   const fieldConfig = {
     "key": fieldKey,
-    "label": label,
-    "name": fieldName,
-    "type": type,
     "instructions": "",
     "required": 0,
     "conditional_logic": 0,
+    type,
+    label,
+    name,
     sectionLabel,
     suggestedName,
     fieldNames,
@@ -155,4 +155,10 @@ export const checkPHPVarsInitializated = (sectionObj, section) => {
     sectionObj.varsInitializated = true;
     section.insertAdjacentHTML('afterbegin', varsBlockCloseTag);
   }
+};
+
+export const toUpperFirstLetter = (str) => {
+  const stringArray = str.split('');
+  stringArray[0] = stringArray[0].toUpperCase();
+  return stringArray.join('').replace(/_/g, ' ');
 };

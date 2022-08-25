@@ -26,6 +26,8 @@ const Textarea = ({
   };
 
   useEffect(() => {
+    if (!value) return;
+
     fakeInput.current.innerHTML = value
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")

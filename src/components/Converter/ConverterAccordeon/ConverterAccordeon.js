@@ -9,7 +9,7 @@ const ConverterAccordeon = ({
   sectionsData,
   changeSectionsData,
 }) => {
-  const [activeItem, setActiveItem] = useState(0);
+  const [activeItem, setActiveItem] = useState(1);
   const [sectionLabel, setSectionLabel] = useState('');
 
   const handleChangeSectionLabel = (e, sectionKey) => {
@@ -28,6 +28,7 @@ const ConverterAccordeon = ({
             id,
             placeholder,
             disabled,
+            type,
             sectionLabel,
           } = sectionsData[sectionKey];
 
@@ -35,7 +36,7 @@ const ConverterAccordeon = ({
             'converter_accordeon__item--active_state': activeItem === subIndex,
           });
 
-          return (
+          return type === 'group' && (
             <li className={itemClass} key={`accordeon_item_${index}_${subIndex}`}>
               <div className="converter_accordeon__head" onClick={() => setActiveItem(subIndex)}>
                 <input
