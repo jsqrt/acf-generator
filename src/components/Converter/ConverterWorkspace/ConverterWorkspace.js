@@ -337,7 +337,7 @@ const ConverterWorkspace = () => {
           <section class='section contacts'>
             <div class='contacts__in'>
               <div class='contacts__text fadeEl'>
-                <p>This expertise has seen us produce
+                <p class='contacts__descr'>This expertise has seen us produce
                   <strong> Europe’s largest 360 fan experience </strong>
                   for Live Nation, transport ABC television audiences through time in a
                   <strong> world first virtual reality experience, </strong>
