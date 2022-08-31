@@ -3,22 +3,17 @@ import { Textarea } from '../../Forms';
 import { ConverterAccordeon } from '../ConverterAccordeon';
 
 import '../../../scss/components/converter/_converter_tabs.scss';
-import FieldsDataContext from '../../../context/fieldsData/FieldsDataContext';
 
 const ConverterTabs = ({
   tabsArray,
 }) => {
-	const { fieldsData, setFieldsData } = useContext(FieldsDataContext);
-  const [activeTab, setActiveTab] = useState(0);
-  const currentPageIndex = 0;
+  // const [activeTab, setActiveTab] = useState(0);
 
   return (
     <div className="converter_tabs">
-      {
+      {/* {
         tabsArray
         && tabsArray.length
-        && fieldsData
-        && fieldsData.length
         && (
           tabsArray.map(({
             value,
@@ -55,7 +50,7 @@ const ConverterTabs = ({
             return null;
           })
         )
-      }
+      } */}
     </div>
   );
 };

@@ -1,127 +1,3 @@
-
-export const initPageConfig = ({
-  updateFieldId,
-  pageTitle,
-  insertPath,
-}) => {
-  const randomKey = Math.floor(Math.random() * (9999999999999 - 1111111111111)) + 1111111111111;
-  updateFieldId(randomKey);
-
-  const pageKey = `group_${randomKey}`;
-  const pageConfig = {
-    "key": pageKey,
-    "title": pageTitle,
-    "location": [
-      [
-        {
-          "param": "page",
-          "operator": "==",
-          "value": "299",
-        },
-      ],
-    ],
-    "menu_order": 0,
-    "position": "normal",
-    "style": "default",
-    "label_placement": "top",
-    "instruction_placement": "label",
-    "hide_on_screen": "",
-    "active": true,
-    "description": "",
-    "show_in_rest": 0,
-    "fields": [],
-  };
-
-  return [...insertPath, pageConfig];
-};
-
-export const createFieldConfig = ({
-  insertPath,
-  label,
-  type,
-  fieldId,
-  defaultValue,
-  groupSubFields,
-  pictureMixinKey,
-  sectionLabel,
-  suggestedName,
-  name,
-  fieldNames,
-  varsInitializated,
-}) => {
-  const fieldKey = `field_${fieldId}`;
-
-  const typeTabConfig = {
-    "placement": "top",
-    "endpoint": 0,
-  };
-
-  const typeGroupConfig = {
-    "layout": "block",
-    "sub_fields": groupSubFields,
-  };
-
-  const typeWysiwygConfig = {
-    "default_value": defaultValue,
-    "tabs": "all",
-    "toolbar": "full",
-    "media_upload": 0,
-    "delay": 0
-  };
-
-  const typeTextareaConfig = {
-    "default_value": defaultValue,
-    "placeholder": "",
-    "maxlength": "",
-    "rows": 4,
-    "new_lines": ""
-  };
-
-  const typeImageConfig = {
-    "clone": [pictureMixinKey],
-    "display": "group",
-    "layout": "block",
-    "prefix_label": 0,
-    "prefix_name": 0
-  }
-
-  const fieldConfig = {
-    "key": fieldKey,
-    "instructions": "",
-    "required": 0,
-    "conditional_logic": 0,
-    type,
-    label,
-    name,
-    sectionLabel,
-    suggestedName,
-    fieldNames,
-    varsInitializated,
-    "wrapper": {
-      "width": "",
-      "class": "",
-      "id": "",
-    },
-  };
-
-  const defineTypeConfig = () => {
-    switch (type) {
-      case 'image': return typeImageConfig;
-      case 'wysiwyg': return typeWysiwygConfig;
-      case 'textarea': return typeTextareaConfig;
-      case 'group': return typeGroupConfig;
-      case 'tab': return typeTabConfig;
-      default:
-        return {};
-    }
-  };
-
-  Object.assign(fieldConfig, defineTypeConfig());
-  // updateFieldId(fieldId + 1);
-
-  return fieldConfig;
-};
-
 export const checkNodeContainsIgnoreClasses = (node, ignoreNodeClassNames) => {
   return (node.classList && Array.from(node.classList)
     .filter((str) => ignoreNodeClassNames
@@ -149,16 +25,75 @@ export const defineTextFieldLabel = (parent) => {
   return fieldName;
 }
 
-export const checkPHPVarsInitializated = (sectionObj, section) => {
-  if (!sectionObj.varsInitializated) {
-    const varsBlockCloseTag = '\n\t?>\n'
-    sectionObj.varsInitializated = true;
-    section.insertAdjacentHTML('afterbegin', varsBlockCloseTag);
-  }
-};
+// export const checkPHPVarsInitializated = (sectionObj, section) => {
+//   // if (!sectionObj.varsInitializated) {
+//   //   const varsBlockCloseTag = '\n\t?>\n'
+//   //   sectionObj.varsInitializated = true;
+//   //   section.insertAdjacentHTML('afterbegin', varsBlockCloseTag);
+//   // }
+// };
 
 export const toUpperFirstLetter = (str) => {
   const stringArray = str.split('');
   stringArray[0] = stringArray[0].toUpperCase();
   return stringArray.join('').replace(/_/g, ' ');
+};
+
+export const getTabChar = (n) => {
+  return '\t'.repeat(n);
+};
+
+export const textTags = ['A','P','SPAN','STRONG','B','I','BR','H1','H2','H3','H4','H5','H6','UL','OL','LI'];
+
+export const checkNodeOnText = (node) => {
+  const hasClassList = !!node.classList && !!node.classList.length;
+  const isTextTag = !!textTags.indexOf(node.nodeName);
+  return node.nodeName === '#text' || (isTextTag && !hasClassList);
+}
+
+export const checkNestingText = (parent, children) => { // if p span etc in text fields, we replace these children with textNode
+  const nodesWithoutSpaces = children.filter((child, index) => {
+    const isText = checkNodeOnText(child);
+
+    if (isText && child.textContent.replace(/\s+/g, '') === '') {
+      child.remove();
+      return false;
+    }
+
+    return true;
+  });
+
+  let textCounter = 0;
+  const textNodeIndex = [];
+
+  const filteredNodesArray = nodesWithoutSpaces.filter((child, index) => {
+    const isText = checkNodeOnText(child);
+
+    if (isText) {
+      textCounter += 1;
+
+      if (textCounter === 1) {
+        const el = document.createTextNode('_reserved');
+        child.after(el);
+        textNodeIndex.push([el, index]);
+      }
+
+      child.remove();
+      return false;
+    }
+
+    return true;
+  });
+
+  if (textNodeIndex.length) {
+    textNodeIndex.forEach(([el, prevTextIndex]) => {
+      if (filteredNodesArray[prevTextIndex]) {
+        filteredNodesArray.splice(prevTextIndex, 0, el);
+      } else {
+        filteredNodesArray.push(el);
+      }
+    });
+  }
+
+  return filteredNodesArray;
 };
