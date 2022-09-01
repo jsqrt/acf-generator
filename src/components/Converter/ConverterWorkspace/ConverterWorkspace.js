@@ -21,8 +21,11 @@ import {
 import {
   createLinkField,
   createTextField,
-  createVarsRoot,
 } from '../utils/createPhpFieldUtils';
+
+import {
+  createVarsRoot,
+} from '../utils/createVarsUtils';
 
 import '../../../scss/components/converter/_converter_workspace.scss';
 import FieldsDataContext from '../../../context/fieldsData/FieldsDataContext';
@@ -42,21 +45,26 @@ const ConverterWorkspace = () => {
 
   const defaultInputValue = `
     <section class='section contacts'>
-      <div class='contacts__in'>
-        <div class='contacts__text fadeEl'>
-          <p class='contacts__descr'>This expertise has seen us produce
-            <strong> Europe’s largest 360 fan experience </strong>
-            for Live Nation, transport ABC television audiences through time in a
-            <strong> world first virtual reality experience, </strong>
-            and produce the
-            <strong> UK’s first immersive gym group for Studio Society.. </strong>
-          </p>
-          <p>And we’re not finished there. As our pioneering industry continues to break new ground, Pebble remains at the forefront of creative innovation and experiential storytelling</p>
-          <span class='contacts__decor'>123</span>
-        </div>
-      </div>
+      <a href="$" class='123'></a>
     </section>
   `;
+  // const defaultInputValue = `
+  //   <section class='section contacts'>
+  //     <div class='contacts__in'>
+  //       <div class='contacts__text fadeEl'>
+  //         <p class='contacts__descr'>This expertise has seen us produce
+  //           <strong> Europe’s largest 360 fan experience </strong>
+  //           for Live Nation, transport ABC television audiences through time in a
+  //           <strong> world first virtual reality experience, </strong>
+  //           and produce the
+  //           <strong> UK’s first immersive gym group for Studio Society.. </strong>
+  //         </p>
+  //         <p>And we’re not finished there. As our pioneering industry continues to break new ground, Pebble remains at the forefront of creative innovation and experiential storytelling</p>
+  //         <span class='contacts__decor'>123</span>
+  //       </div>
+  //     </div>
+  //   </section>
+  // `;
 
   const childrenIteration = ({
     parent,
@@ -64,7 +72,12 @@ const ConverterWorkspace = () => {
     section,
     fieldId = sectionKey,
     nestingLevel = 0,
+    varsNestingLevel = 2,
+    inheritedVarName,
+    groupKeys,
   }) => {
+    console.log(groupKeys); //!
+
     let children = Array.from(parent.childNodes);
     let newFieldKey = fieldId;
 
@@ -78,24 +91,25 @@ const ConverterWorkspace = () => {
         sectionKey,
         section,
         fieldId,
-        nestingLevel,
+        nestingLevel: nestingLevel - 1,
+        varsNestingLevel,
+        inheritedVarName,
+        groupKeys,
       });
 
-      return;
+      return newFieldKey;
     }
-
     children = checkNestingText(parent, children);
 
     children.forEach((child, childIndex) => {
       let currentNestingLevel = nestingLevel + 1;
-
       const { nodeName } = child;
 
       if (
         nodeName === 'UL'
         || nodeName === 'OL'
         || checkNodeContainsIgnoreClasses(child, ignoreNodeClassNames)
-      ) return;
+      ) return newFieldKey;
       else if (nodeName === '#text' && child.textContent.replace(/\s+/g, '') !== '') { // if its just text
         newFieldKey += 1;
         createTextField({
@@ -103,24 +117,51 @@ const ConverterWorkspace = () => {
           child,
           sectionKey,
           section,
-          newFieldKey,
+          fieldKey: newFieldKey,
           fieldsData,
           currentPageIndex,
+          varsNestingLevel,
+          inheritedVarName,
         });
       }
       else if (nodeName === 'A') {
         newFieldKey += 1;
-        createLinkField({
+        currentNestingLevel += 1;
+
+        // const { varName, newGroupKeys } = createGroupField({
+        //   parent,
+        //   child,
+        //   sectionKey,
+        //   section,
+        //   fieldKey: newFieldKey,
+        //   fieldsData,
+        //   currentPageIndex,
+        //   varsNestingLevel: currentNestingLevel,
+        //   groupKeys,
+        // });
+
+        const { varName, newGroupKeys } = createLinkField({
           parent,
           child,
           sectionKey,
           section,
-          newFieldKey,
-          currentNestingLevel,
+          fieldKey: newFieldKey,
           fieldsData,
           currentPageIndex,
+          varsNestingLevel: currentNestingLevel,
+          groupKeys,
         });
-        // newFieldKey = childrenIteration(child, sectionKey, section, newFieldKey, currentNestingLevel);
+
+        newFieldKey = childrenIteration({
+          parent: child,
+          sectionKey,
+          section,
+          fieldId: newFieldKey,
+          nestingLevel: currentNestingLevel,
+          varsNestingLevel: currentNestingLevel,
+          inheritedVarName: varName,
+          groupKeys: newGroupKeys,
+        });
       }
       // else if (nodeName === 'PICTURE') {
       //   // newFieldKey += 1;
@@ -133,6 +174,8 @@ const ConverterWorkspace = () => {
           section,
           fieldId: newFieldKey,
           nestingLevel: currentNestingLevel,
+          varsNestingLevel,
+          groupKeys,
         });
       }
 
@@ -144,20 +187,23 @@ const ConverterWorkspace = () => {
   };
 
   const removeAllRoots = ($sectionNode) => {
-    const $allRoots = [
-      ...Array.from($sectionNode.querySelectorAll('._content')),
-      ...Array.from($sectionNode.querySelectorAll('._vars')),
-      ...Array.from($sectionNode.querySelectorAll('._root')),
+    const rootSelectors = [
+      '._root',
+      '._content',
+      '._vars',
     ];
 
-    if ($allRoots.length) { // срабатывает раньше того, как цикл добежит до последнего чилда
-      $allRoots.forEach(($root) => {
-        const rootInner = $root.innerHTML;
-        // $root.before(rootInner);
-        $root.insertAdjacentHTML('beforebegin', rootInner);
-        $root.remove();
-      });
-    }
+    rootSelectors.forEach((selector) => {
+      const $allRoots = Array.from($sectionNode.querySelectorAll(selector)).reverse();
+
+      if ($allRoots.length) { // срабатывает раньше того, как цикл добежит до последнего чилда
+        $allRoots.forEach(($root) => {
+          const rootInner = $root.innerHTML;
+          $root.insertAdjacentHTML('beforebegin', rootInner);
+          $root.remove();
+        });
+      }
+    })
   }
 
   const separateSections = ($sectionsNodes) => {
@@ -218,6 +264,8 @@ const ConverterWorkspace = () => {
         parent: $sectionNode,
         sectionKey: currentFieldKey + 1,
         section: $sectionNode,
+        varsNestingLevel: 2,
+        groupKeys: [currentFieldKey + 1],
       });
 
       // const varsBlockOpenTag = '\n\t<?php';
@@ -246,10 +294,10 @@ const ConverterWorkspace = () => {
     inputDebouce = setTimeout(() => {
       const DOM = document.createElement('div');
       DOM.innerHTML = value;
+
       const $sectionsNodes = DOM.querySelectorAll('section');
 
       separateSections($sectionsNodes);
-
       setFieldsData([...fieldsData]);
     }, 200);
   };

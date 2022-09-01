@@ -47,7 +47,8 @@ export const textTags = ['A','P','SPAN','STRONG','B','I','BR','H1','H2','H3','H4
 
 export const checkNodeOnText = (node) => {
   const hasClassList = !!node.classList && !!node.classList.length;
-  const isTextTag = !!textTags.indexOf(node.nodeName);
+  const isTextTag = textTags.indexOf(node.nodeName) > -1;
+
   return node.nodeName === '#text' || (isTextTag && !hasClassList);
 }
 
