@@ -19,6 +19,8 @@ import {
 } from '../utils/createConfigUtils';
 
 import {
+  createGroupField,
+  createImgField,
   createLinkField,
   createTextField,
 } from '../utils/createPhpFieldUtils';
@@ -45,7 +47,17 @@ const ConverterWorkspace = () => {
 
   const defaultInputValue = `
     <section class='section contacts'>
-      <a href="$" class='123'></a>
+        <div class="div1">
+          <div class="div2">
+            <div href="" class="test">
+              <div class="div3">
+                <div class="div4">
+                  <a class="logo" type='test'></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
     </section>
   `;
   // const defaultInputValue = `
@@ -66,19 +78,19 @@ const ConverterWorkspace = () => {
   //   </section>
   // `;
 
+
   const childrenIteration = ({
     parent,
-    sectionKey,
     section,
-    fieldId = sectionKey,
-    nestingLevel = 0,
-    varsNestingLevel = 2,
     inheritedVarName,
     groupKeys,
-  }) => {
-    console.log(groupKeys); //!
+    fieldId = groupKeys[0],
+    inheritedLinkTextVarCall,
 
-    let children = Array.from(parent.childNodes);
+    inheritedNestingLevel = 0,
+    inheritedCallNestingLevel = 2,
+  }) => {
+    let children = Array.from(parent.children); //@ ex. childNodes
     let newFieldKey = fieldId;
 
     if (!children.length) return newFieldKey;
@@ -88,13 +100,13 @@ const ConverterWorkspace = () => {
     ) {
       childrenIteration({
         parent: parent.querySelector('._content'),
-        sectionKey,
         section,
         fieldId,
-        nestingLevel: nestingLevel - 1,
-        varsNestingLevel,
         inheritedVarName,
         groupKeys,
+
+        inheritedNestingLevel,
+        inheritedCallNestingLevel,
       });
 
       return newFieldKey;
@@ -102,7 +114,9 @@ const ConverterWorkspace = () => {
     children = checkNestingText(parent, children);
 
     children.forEach((child, childIndex) => {
-      let currentNestingLevel = nestingLevel + 1;
+      let currentNestingLevel = inheritedNestingLevel + 1;
+      let currentCallNestingLevel = inheritedCallNestingLevel;
+
       const { nodeName } = child;
 
       if (
@@ -110,71 +124,96 @@ const ConverterWorkspace = () => {
         || nodeName === 'OL'
         || checkNodeContainsIgnoreClasses(child, ignoreNodeClassNames)
       ) return newFieldKey;
+
       else if (nodeName === '#text' && child.textContent.replace(/\s+/g, '') !== '') { // if its just text
         newFieldKey += 1;
-        createTextField({
-          parent,
-          child,
-          sectionKey,
-          section,
-          fieldKey: newFieldKey,
-          fieldsData,
-          currentPageIndex,
-          varsNestingLevel,
-          inheritedVarName,
-        });
+
+        if (parent.nodeName === 'A') {
+          child.textContent = inheritedLinkTextVarCall;
+        } else {
+          createTextField({
+            parent,
+            child,
+            fieldKey: newFieldKey,
+            fieldsData,
+            currentPageIndex,
+            nestingLevel: currentNestingLevel,
+            callNestingLevel: currentCallNestingLevel,
+            inheritedVarName,
+            groupKeys,
+          });
+        }
       }
-      else if (nodeName === 'A') {
+
+      else if (nodeName === 'A' || child.classList.contains('test')) {
         newFieldKey += 1;
         currentNestingLevel += 1;
 
-        // const { varName, newGroupKeys } = createGroupField({
-        //   parent,
-        //   child,
-        //   sectionKey,
-        //   section,
-        //   fieldKey: newFieldKey,
-        //   fieldsData,
-        //   currentPageIndex,
-        //   varsNestingLevel: currentNestingLevel,
-        //   groupKeys,
-        // });
-
-        const { varName, newGroupKeys } = createLinkField({
+        const { fieldVarName } = createGroupField({
           parent,
           child,
-          sectionKey,
-          section,
           fieldKey: newFieldKey,
           fieldsData,
           currentPageIndex,
-          varsNestingLevel: currentNestingLevel,
+          callNestingLevel: currentCallNestingLevel,
+          nestingLevel: currentNestingLevel,
+          inheritedVarName,
           groupKeys,
+        });
+
+        const newGroupKeys = [...groupKeys, newFieldKey];
+        currentCallNestingLevel = currentNestingLevel;
+        newFieldKey += 1;
+
+        const { linkTextVarCall } = createLinkField({
+          parent,
+          child,
+          fieldKey: newFieldKey,
+          fieldsData,
+          currentPageIndex,
+          nestingLevel: currentNestingLevel,
+          callNestingLevel: currentCallNestingLevel,
+          inheritedVarName: fieldVarName,
+          groupKeys: newGroupKeys,
         });
 
         newFieldKey = childrenIteration({
           parent: child,
-          sectionKey,
-          section,
           fieldId: newFieldKey,
-          nestingLevel: currentNestingLevel,
-          varsNestingLevel: currentNestingLevel,
-          inheritedVarName: varName,
           groupKeys: newGroupKeys,
+
+          inheritedVarName: fieldVarName,
+          inheritedLinkTextVarCall: linkTextVarCall,
+          inheritedNestingLevel: currentNestingLevel,
+          inheritedCallNestingLevel: currentCallNestingLevel,
         });
       }
-      // else if (nodeName === 'PICTURE') {
-      //   // newFieldKey += 1;
-      //   // createPicture(sectionId, parent, child);
-      // }
+
+      else if (nodeName === 'IMG') {
+        newFieldKey += 1;
+
+        createImgField({
+          parent,
+          child,
+          fieldKey: newFieldKey,
+          fieldsData,
+          currentPageIndex,
+          nestingLevel: currentNestingLevel,
+          callNestingLevel: currentCallNestingLevel,
+          inheritedVarName,
+          groupKeys,
+        });
+        // newFieldKey += 1;
+      }
+
       else {
         newFieldKey = childrenIteration({
           parent: child,
-          sectionKey,
           section,
           fieldId: newFieldKey,
-          nestingLevel: currentNestingLevel,
-          varsNestingLevel,
+          inheritedVarName,
+          inheritedNestingLevel: currentNestingLevel,
+          inheritedCallNestingLevel: currentCallNestingLevel,
           groupKeys,
         });
       }
@@ -250,7 +289,7 @@ const ConverterWorkspace = () => {
         suggestedName: sectionSuggestedName,
         varsInitializated: false,
         fieldNames: {},
-        groupSubFields: [],
+        groupSubFields: {},
       });
 
       const {root, contentBlock, varsBlock } = createVarsRoot({ isSectionVars: true, });
@@ -262,9 +301,8 @@ const ConverterWorkspace = () => {
 
       const newFieldKey = childrenIteration({
         parent: $sectionNode,
-        sectionKey: currentFieldKey + 1,
         section: $sectionNode,
-        varsNestingLevel: 2,
+        callNestingLevel: 2,
         groupKeys: [currentFieldKey + 1],
       });
 
@@ -292,6 +330,7 @@ const ConverterWorkspace = () => {
     clearTimeout(inputDebouce);
 
     inputDebouce = setTimeout(() => {
+      console.clear();
       const DOM = document.createElement('div');
       DOM.innerHTML = value;
 
@@ -299,6 +338,10 @@ const ConverterWorkspace = () => {
 
       separateSections($sectionsNodes);
       setFieldsData([...fieldsData]);
+
+      setTimeout(() => {
+        console.log(fieldsData); //!
+      }, 100);
     }, 200);
   };
 
@@ -332,7 +375,6 @@ const ConverterWorkspace = () => {
       </div>
       <div className="converter_workspace__col">
         <ConverterAccordeon />
-        {/* <ConverterTabs tabsArray={tabsArray} /> */}
       </div>
     </div>
   );

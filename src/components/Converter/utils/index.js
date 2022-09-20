@@ -13,13 +13,35 @@ export const defineTextFieldLabel = (parent) => {
 
   Array.from(parent.classList).forEach((str) => {
     if (str.includes('title')) fieldName = 'title';
-    if (str.includes('descr')) fieldName = 'descr';
-    if (str.includes('text')) fieldName = 'text';
-    if (str.includes('subtitle')) fieldName = 'subtitle';
-    if (str.includes('name')) fieldName = 'name';
-    if (str.includes('position')) fieldName = 'position';
-    if (str.includes('label')) fieldName = 'label';
-    if (str.includes('value')) fieldName = 'value';
+    else if (str.includes('descr')) fieldName = 'descr';
+    else if (str.includes('text')) fieldName = 'text';
+    else if (str.includes('subtitle')) fieldName = 'subtitle';
+    else if (str.includes('name')) fieldName = 'name';
+    else if (str.includes('position')) fieldName = 'position';
+    else if (str.includes('label')) fieldName = 'label';
+    else if (str.includes('value')) fieldName = 'value';
+
+    else if (
+      str.includes('button')
+      || str.includes('btn')
+      || str.includes('trigger')
+      || str.includes('more')
+      || str.includes('back')
+      || parent.nodeName === 'BUTTON'
+    ) fieldName = 'button_title';
+  });
+
+  return fieldName;
+}
+
+export const defineImgFieldLabel = (target, child) => {
+  let fieldName = 'image';
+
+  Array.from(target.classList).forEach((str) => {
+    if (str.includes('decor')) fieldName = 'decor';
+    if (str.includes('logo')) fieldName = 'logo';
+    if (str.includes('icon')) fieldName = 'icon';
+    if (str.includes('bg')) fieldName = 'background';
   });
 
   return fieldName;

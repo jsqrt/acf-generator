@@ -40,15 +40,28 @@ export const createFieldConfig = ({
   type,
   fieldId,
   defaultValue,
-  groupSubFields,
+  groupSubFields = {},
   pictureMixinKey,
   sectionLabel,
   suggestedName,
   name,
-  fieldNames,
+  fieldNames = {},
   varsInitializated,
 }) => {
   const fieldKey = `field_${fieldId}`;
+
+  const typeImgConfig = {
+    "return_format": "array",
+    "preview_size": "medium",
+    "library": "all",
+    "min_width": "",
+    "min_height": "",
+    "min_size": "",
+    "max_width": "",
+    "max_height": "",
+    "max_size": "",
+    "mime_types": ""
+  };
 
   const typeTabConfig = {
     "placement": "top",
@@ -57,6 +70,7 @@ export const createFieldConfig = ({
 
   const typeGroupConfig = {
     "layout": "block",
+    fieldNames,
     "sub_fields": groupSubFields,
   };
 
@@ -76,13 +90,13 @@ export const createFieldConfig = ({
     "new_lines": ""
   };
 
-  const typeImageConfig = {
-    "clone": [pictureMixinKey],
-    "display": "group",
-    "layout": "block",
-    "prefix_label": 0,
-    "prefix_name": 0
-  }
+  // const typeImageConfig = {
+  //   "clone": [pictureMixinKey],
+  //   "display": "group",
+  //   "layout": "block",
+  //   "prefix_label": 0,
+  //   "prefix_name": 0
+  // }
 
   const fieldConfig = {
     "key": fieldKey,
@@ -94,7 +108,6 @@ export const createFieldConfig = ({
     name,
     sectionLabel,
     suggestedName,
-    fieldNames,
     varsInitializated,
     "wrapper": {
       "width": "",
@@ -105,7 +118,7 @@ export const createFieldConfig = ({
 
   const defineTypeConfig = () => {
     switch (type) {
-      case 'image': return typeImageConfig;
+      case 'img': return typeImgConfig;
       case 'wysiwyg': return typeWysiwygConfig;
       case 'textarea': return typeTextareaConfig;
       case 'group': return typeGroupConfig;

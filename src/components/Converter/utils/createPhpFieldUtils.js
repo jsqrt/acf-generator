@@ -3,204 +3,263 @@ import {
   defineTextFieldLabel,
   toUpperFirstLetter,
   getTabChar,
+  defineImgFieldLabel,
 } from ".";
 
 import { createFieldConfig } from "./createConfigUtils";
 import { addToVarsGroup, createVarsRoot } from "./createVarsUtils";
 
-export const generatePathToField = (keys) => {
-  return keys.join('.sub_fields');
+export const addNameIterationToStr = (str, fieldNameIteration) => {
+  if (fieldNameIteration) return str.concat('_').concat(fieldNameIteration);
+  return str;
 };
 
-export const createTextField = ({
+const changeDeepProperty = ({
+  prevObj,
+  key,
+  groupKeys,
+  fieldKey,
+  fieldConfig,
+  fieldName,
+  index,
+}) => {
+  let i = index || 0;
+
+  if (groupKeys.length - 1 === i) {
+    if (fieldName) {
+      if (prevObj[key].fieldNames[fieldName] === undefined) {
+        prevObj[key].fieldNames[fieldName] = 1;
+      } else {
+        prevObj[key].fieldNames[fieldName] += 1;
+      }
+
+      return prevObj[key].fieldNames[fieldName];
+    }
+
+    if (fieldConfig) {
+      prevObj[key].sub_fields[fieldKey] = fieldConfig;
+    }
+
+    return;
+  };
+  i += 1;
+
+  return changeDeepProperty({
+    prevObj: prevObj[key].sub_fields,
+    key: groupKeys[i],
+    groupKeys,
+    fieldKey,
+    fieldConfig,
+    fieldName,
+    index: i,
+  });
+};
+
+export const createSomeField = ({
   parent,
   child,
-  sectionKey,
   fieldKey,
   fieldsData,
   currentPageIndex,
   varsNestingLevel,
   inheritedVarName,
-}) => {
-  // checkPHPVarsInitializated(fieldsData[currentPageIndex].fields[sectionKey], section);
+  groupKeys,
+  fieldName,
+  inheritType,
+  fieldType,
 
-  const {
-    suggestedName,
-    fieldNames,
-  } = fieldsData[currentPageIndex].fields[sectionKey];
-  let fieldName = defineTextFieldLabel(parent);
+  nestingLevel,
+  callNestingLevel,
+}, callback = () => null) => {
+  const { suggestedName } = fieldsData[currentPageIndex].fields[groupKeys[0]];
 
-  fieldNames[fieldName] = fieldNames[fieldName] >= 1 ? fieldNames[fieldName] += 1 : 1;
+  const fieldNameIteration = changeDeepProperty({
+    prevObj: fieldsData[currentPageIndex].fields,
+    groupKeys,
+    fieldName,
+    key: groupKeys[0],
+  });
 
-  const fieldId = `${suggestedName}_${fieldName}_${fieldNames[fieldName]}`;
+  const fieldSubId = inheritedVarName ? fieldName : [suggestedName, fieldName].join('_');
+  const fieldId = addNameIterationToStr(fieldSubId, fieldNameIteration)
+  const fieldVarName = addNameIterationToStr('$'.concat(fieldName), fieldNameIteration)
+  const fieldLabel = addNameIterationToStr(fieldName, fieldNameIteration)
 
-  const fieldVarName = `$${fieldName}_${fieldNames[fieldName]}`;
+  const indent = `\n${getTabChar(callNestingLevel)}`;
+  let getField;
 
-  const getField = inheritedVarName ? ` \n${getTabChar(varsNestingLevel)}${fieldVarName} = ${inheritedVarName}['${fieldId}'];` : ` \n${getTabChar(varsNestingLevel)}${fieldVarName} = get_field('${fieldId}');`;
+  if (inheritedVarName) {
+    getField = `${indent}${fieldVarName} = ${inheritedVarName}['${fieldId}'];`;
+  } else {
+    getField = `${indent}${fieldVarName} = get_field('${fieldId}');`;
+  }
 
-  const callField = `<?php echo ${fieldVarName}; ?>`;
-
-  const fieldLabel = `${fieldName}${fieldNames[fieldName] !== 1 ? ` ${fieldNames[fieldName]}` : ''}`;
   let type;
 
   switch (fieldName) {
     case 'descr' || 'text': type = 'wysiwyg'; break;
-    default: type = 'text';
+    default: type = inheritType || 'text';
   }
 
-  fieldsData[currentPageIndex]
-    .fields[sectionKey]
-    .sub_fields.push(createFieldConfig({
-      type,
-      defaultValue: child.textContent !== '_reserved' ? child.textContent : '',
-      name: fieldId,
-      label: toUpperFirstLetter(fieldLabel),
-      fieldId: fieldKey,
-    }));
-
-  addToVarsGroup(parent, getField);
-  child.textContent = callField; // place output field
-};
-
-export const createLinkField = ({
-  parent,
-  child,
-  sectionKey,
-  fieldKey,
-  fieldsData,
-  currentPageIndex,
-  varsNestingLevel,
-  groupKeys,
-}) => {
-
-  const {
-    suggestedName,
-    fieldNames,
-  } = fieldsData[currentPageIndex].fields[sectionKey];
-  let fieldName = 'link';
-
-  fieldNames[fieldName] = fieldNames[fieldName] >= 1 ? fieldNames[fieldName] += 1 : 1;
-
-  const fieldId = `${suggestedName}_${fieldName}_${fieldNames[fieldName]}`;
-  const fieldVarName = `$${fieldName}_${fieldNames[fieldName]}`;
-  const getField = ` \n\t\t${fieldVarName} = get_field('${fieldId}');`;
-
-  const varLinkUrl = `\n${getTabChar(varsNestingLevel)}$link_url = ${fieldVarName}['url'];`
-  const varLinkTitle = `\n${getTabChar(varsNestingLevel)}$link_title = ${fieldVarName}['title'];`
-  const varLinkTarget = `\n${getTabChar(varsNestingLevel)}$link_target = ${fieldVarName}['target'] ? ${fieldVarName}['target'] : '_self';`
-  // const variablesGroup = `\n${getTabChar(currentNestingLevel)}<?php if (${fieldVarName}) {${varLinkUrl}${varLinkTitle}${varLinkTarget}\n ${getTabChar(currentNestingLevel)}?&gt;\n`;
-
-  const callLinkUrl = `<?php echo esc_url($link_url); ?>`;
-  const callLinkTarget = `<?php echo esc_attr($link_target); ?>`;
-  // const callLinkTitle = `<?php echo esc_html($link_title); ?>`;
-
-  child.href = callLinkUrl;
-  child.target = callLinkTarget;
-
-  fieldsData
-    [currentPageIndex]
-    [generatePathToField(groupKeys, fieldKey)] = createFieldConfig({
-      type: 'wysiwyg',
-      defaultValue: child.textContent !== '_reserved' ? child.textContent : '',
-      name: fieldId,
-      label: `${fieldName}_${fieldNames[fieldName]}`,
-      fieldId: fieldKey,
-    });
-
-  const {root, contentBlock, varsBlock } = createVarsRoot({
-    nestingLevel: varsNestingLevel - 1,
-    rootVarName: fieldVarName,
+  const fieldConfig = createFieldConfig({
+    type,
+    defaultValue: fieldType === 'text' ? (child.textContent !== '_reserved' ? child.textContent : '') : '',
+    name: fieldId,
+    label: fieldLabel,
+    fieldId: fieldKey,
   });
 
-  // section.insertAdjacentHTML('afterbegin', getField);
-  addToVarsGroup(parent, getField);
+  changeDeepProperty({
+    prevObj: fieldsData[currentPageIndex].fields,
+    key: groupKeys[0],
+    groupKeys,
+    fieldKey,
+    fieldConfig,
+  });
 
-  child.before(root);
-  contentBlock.append(child);
+  if (inheritType === 'group' || child.nodeName === '#text') {
+    addToVarsGroup(parent, getField);
+  } else {
+    addToVarsGroup(child, getField);
+  }
 
-  varsBlock.append(varLinkUrl);
-  varsBlock.append(varLinkTitle);
-  varsBlock.append(varLinkTarget);
+  callback({
+    suggestedName,
+    fieldVarName,
+    child,
+
+    nestingLevel,
+    callNestingLevel,
+  });
+
+  return {
+    fieldVarName,
+  }
+};
+
+export const createImgField = (data) => {
+  const callback = ({
+    child,
+    fieldVarName,
+    varsNestingLevel,
+  }) => {
+    const indent = `\n${getTabChar(varsNestingLevel)}`;
+
+    const varLinkUrl = `${indent}${fieldVarName}_url = ${fieldVarName}['url'];`
+    const varLinkTitle = `${indent}${fieldVarName}_alt = ${fieldVarName}['alt'];`
+
+    addToVarsGroup(child, varLinkUrl);
+    addToVarsGroup(child, varLinkTitle);
+
+    const callLinkUrl = `<?php echo esc_url(${fieldVarName}_url); ?>`;
+    const callLinkAlt = `<?php echo esc_attr(${fieldVarName}_alt); ?>`;
+
+    child.src = callLinkUrl;
+    child.alt = callLinkAlt;
+  };
+
+  const { fieldVarName } = createSomeField(
+    {
+      ...data,
+      fieldType: 'img',
+      fieldName: defineImgFieldLabel(data.child),
+    },
+    callback,
+  );
 
   return {
     varName: fieldVarName,
   }
 };
 
-// export const createGroupField = ({
-//   parent,
-//   child,
-//   sectionKey,
-//   fieldKey,
-//   fieldsData,
-//   currentPageIndex,
-//   varsNestingLevel,
-//   groupKeys,
-// }) => {
-//   const {
-//     suggestedName,
-//     fieldNames,
-//   } = fieldsData[currentPageIndex].fields[sectionKey];
-//   let fieldName = 'link';
+export const createTextField = (data) => {
+  const callback = ({
+    child,
+    fieldVarName,
+  }) => {
+    data.child.textContent = `<?php echo ${fieldVarName}; ?>`; // place output field
+  };
 
-//   fieldNames[fieldName] = fieldNames[fieldName] >= 1 ? fieldNames[fieldName] += 1 : 1;
+  const { fieldVarName } = createSomeField(
+    {
+      ...data,
+      fieldType: 'text',
+      fieldName: defineTextFieldLabel(data.parent),
+    },
+    callback,
+  );
 
-//   const fieldId = `${suggestedName}_${fieldName}_${fieldNames[fieldName]}`;
-//   const fieldVarName = `$${fieldName}_${fieldNames[fieldName]}`;
-//   const getField = ` \n\t\t${fieldVarName} = get_field('${fieldId}');`;
+  return {
+    varName: fieldVarName,
+  }
+};
 
-//   const varLinkUrl = `\n${getTabChar(varsNestingLevel)}$link_url = ${fieldVarName}['url'];`
-//   const varLinkTitle = `\n${getTabChar(varsNestingLevel)}$link_title = ${fieldVarName}['title'];`
-//   const varLinkTarget = `\n${getTabChar(varsNestingLevel)}$link_target = ${fieldVarName}['target'] ? ${fieldVarName}['target'] : '_self';`
-//   // const variablesGroup = `\n${getTabChar(currentNestingLevel)}<?php if (${fieldVarName}) {${varLinkUrl}${varLinkTitle}${varLinkTarget}\n ${getTabChar(currentNestingLevel)}?&gt;\n`;
+export const createGroupField = (data) => {
+  const callback = ({
+    child,
+    fieldVarName,
+    nestingLevel,
+    callNestingLevel,
+  }) => {
+    const { root, contentBlock, varsBlock } = createVarsRoot({
+      nestingLevel: nestingLevel - 1,
+      rootVarName: fieldVarName,
+    });
 
-//   const callLinkUrl = `<?php echo esc_url($link_url); ?>`;
-//   const callLinkTarget = `<?php echo esc_attr($link_target); ?>`;
-//   // const callLinkTitle = `<?php echo esc_html($link_title); ?>`;
+    child.before(root);
+    contentBlock.append(child);
+  };
 
-//   child.href = callLinkUrl;
-//   child.target = callLinkTarget;
+  const { fieldVarName } = createSomeField(
+    {
+      ...data,
+      fieldName: 'group',
+      inheritType: 'group',
+    },
+    callback,
+  );
 
-//   fieldsData
-//     [currentPageIndex]
-//     [generatePathToField(groupKeys, fieldKey)] = createFieldConfig({
-//       type: 'wysiwyg',
-//       defaultValue: child.textContent !== '_reserved' ? child.textContent : '',
-//       name: fieldId,
-//       label: `${fieldName}_${fieldNames[fieldName]}`,
-//       fieldId: fieldKey,
-//     });
+  return {
+    fieldVarName,
+  };
+};
 
-//   const {root, contentBlock, varsBlock } = createVarsRoot({
-//     nestingLevel: varsNestingLevel - 1,
-//     rootVarName: fieldVarName,
-//   });
+export const createLinkField = (data) => {
+  const callback = ({
+    child,
+    fieldVarName,
+    nestingLevel,
+    callNestingLevel,
+  }) => {
+    const indent = `\n${getTabChar(nestingLevel)}`;
 
-//   // section.insertAdjacentHTML('afterbegin', getField);
-//   addToVarsGroup(parent, getField);
+    const varLinkUrl = `${indent}${fieldVarName}_url = ${fieldVarName}['url'];`
+    const varLinkTitle = `${indent}${fieldVarName}_title = ${fieldVarName}['title'];`
+    const varLinkTarget = `${indent}${fieldVarName}_target = ${fieldVarName}['target'] ? ${fieldVarName}['target'] : '_self';`
 
-//   child.before(root);
-//   contentBlock.append(child);
+    addToVarsGroup(child, varLinkUrl);
+    addToVarsGroup(child, varLinkTitle);
+    addToVarsGroup(child, varLinkTarget);
 
-//   varsBlock.append(varLinkUrl);
-//   varsBlock.append(varLinkTitle);
-//   varsBlock.append(varLinkTarget);
+    const callLinkUrl = `<?php echo esc_url(${fieldVarName}_url); ?>`;
+    const callLinkTarget = `<?php echo esc_attr(${fieldVarName}_target); ?>`;
 
-//   return {
-//     varName: fieldVarName,
-//   }
-// };
+    child.href = callLinkUrl;
+    child.target = callLinkTarget;
+  };
 
-    // const createPicture = (sectionId, parent, child) => {
-  //   checkPHPVarsInitializated(fieldsData[sectionId]);
-  //   const { section, suggestedName, fieldNames } = fieldsData[sectionId];
+  const { fieldVarName } = createSomeField(
+    {
+      ...data,
+      fieldType: 'link',
+      fieldName: 'link',
+    },
+    callback,
+  );
+  const linkTextVarCall = `<?php echo ${fieldVarName}_title; ?>`;
 
-  //   const sourceNodes = Array.from(child.querySelectorAll('source')) || [];
-  //   const imgNode = child.querySelector('img');
-  //   const sources = [];
-
-  //   sourceNodes.push(imgNode);
-  //   sourceNodes.forEach((node) => {
-  //     console.log(node.getAttribute('src') || node.getAttribute('srcset')); //!
-  //   });
-  // };
+  return {
+    varName: fieldVarName,
+    linkTextVarCall,
+  }
+};
