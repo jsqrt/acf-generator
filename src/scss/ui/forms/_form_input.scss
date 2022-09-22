@@ -9,6 +9,12 @@
 
 }
 
+.input__label {
+	display: block;
+	margin-bottom: .4rem;
+	font-size: 1.3rem;
+}
+
 .input__in {
 	@extend %form_el_default;
 }

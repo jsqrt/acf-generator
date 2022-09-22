@@ -17,6 +17,7 @@ const ConverterAccordeon = () => {
     const { value } = target;
 
     fieldsData[currentPageIndex].fields[sectionKey].label = value;
+    console.log(fieldsData);
   };
 
   return (

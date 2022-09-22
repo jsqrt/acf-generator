@@ -39,16 +39,9 @@ import { ConverterAccordeon } from '../ConverterAccordeon';
 const ConverterWorkspace = () => {
   const [fieldKeyCounter, setFieldKeyCounter] = useState(0);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
-	const { fieldsData, setFieldsData } = useContext(FieldsDataContext);
+	const { fieldsData, setFieldsData, settings } = useContext(FieldsDataContext);
   const [pictureBrickKey, setPictureBrickKey] = useState('');
   const [pageInitializated, setPageInitializated] = useState(false);
-
-  const ignoreNodeClassNames = [
-    'list',
-    'swiper-wrapper',
-    'item',
-    'slider',
-  ];
 
   // const defaultInputValue = `
   //   <section class='section contacts'>
@@ -91,6 +84,8 @@ const ConverterWorkspace = () => {
       </picture>
     </section>
   `;
+
+
   // const defaultInputValue = `
   //   <section class='section contacts'>
   //       <div class="div1">
@@ -167,7 +162,7 @@ const ConverterWorkspace = () => {
         nodeName === 'UL'
         || nodeName === 'OL'
         || nodeName === 'LI'
-        || checkNodeContainsIgnoreClasses(child, ignoreNodeClassNames)
+        || checkNodeContainsIgnoreClasses(child, settings.ignoreClasses)
         || ignoreMarker
       ) {
 

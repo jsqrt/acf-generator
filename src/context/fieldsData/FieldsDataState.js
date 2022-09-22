@@ -4,9 +4,21 @@ import FieldsDataContext from './FieldsDataContext';
 
 const FieldsDataState = ({ children }) => {
   const [fieldsData, setFieldsData] = useState([]);
+  const [settings, setSettings] = useState({
+    ignoreClasses: [
+      'list',
+      'swiper-wrapper',
+      'item',
+      'slider',
+    ],
+  });
 
   return (
-    <FieldsDataContext.Provider value={{ fieldsData, setFieldsData }}>
+    <FieldsDataContext.Provider value={{
+      fieldsData,
+      setFieldsData,
+      settings,
+    }}>
       {children}
     </FieldsDataContext.Provider>
   );

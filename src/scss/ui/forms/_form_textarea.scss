@@ -91,6 +91,7 @@
 	@extend %scrollbar;
 
 	z-index: -1;
+	// z-index: 2;
 	position: absolute;
 	left: 0;
 	top: 0;
@@ -100,10 +101,22 @@
 	max-height: 100%;
 	overflow-y: auto;
 	overflow-x: hidden;
+	pointer-events: none;
 
 	.mark {
 		&.mark--tag {
+			// position: relative;
 			color: rgb(231, 102, 102);
+			// pointer-events: initial;
+
+			// transition: color .2s ease-in-out;
+
+			// &:hover,
+			// &:focus {
+			// 	color: rgba(231, 102, 102, 0.546);
+			// 	text-decoration: none;
+			// 	cursor: pointer;
+			// }
 		}
 		&.mark--symbol {
 			color: rgb(126, 222, 221);

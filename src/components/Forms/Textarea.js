@@ -52,7 +52,13 @@ const Textarea = ({
   return (
     <div className="textarea">
       <div className="textarea_wrap">
-        <label className="textarea_cover" htmlFor={id} ref={fakeInput}>{value}</label>
+        <label
+          className="textarea_cover"
+          htmlFor={id}
+          ref={fakeInput}
+        >
+          {value}
+        </label>
         <textarea
           name={id}
           id={id}
