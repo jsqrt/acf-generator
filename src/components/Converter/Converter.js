@@ -3,6 +3,7 @@ import { ConverterWorkspace } from './ConverterWorkspace';
 import { FieldsDataState } from '../../context/fieldsData';
 
 import '../../scss/components/converter/_converter.scss';
+// import { useEffect } from 'react';
 
 const Converter = () => {
   return (

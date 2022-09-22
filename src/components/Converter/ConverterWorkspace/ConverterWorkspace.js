@@ -11,17 +11,20 @@ import {
   toUpperFirstLetter,
   checkNestingText,
   getTabChar,
+  createPhpIcon,
 } from '../utils';
 
 import {
   initPageConfig,
   createFieldConfig,
+  createPictureBrick,
 } from '../utils/createConfigUtils';
 
 import {
   createGroupField,
   createImgField,
   createLinkField,
+  createPictureField,
   createTextField,
 } from '../utils/createPhpFieldUtils';
 
@@ -37,6 +40,8 @@ const ConverterWorkspace = () => {
   const [fieldKeyCounter, setFieldKeyCounter] = useState(0);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
 	const { fieldsData, setFieldsData } = useContext(FieldsDataContext);
+  const [pictureBrickKey, setPictureBrickKey] = useState('');
+  const [pageInitializated, setPageInitializated] = useState(false);
 
   const ignoreNodeClassNames = [
     'list',
@@ -45,32 +50,69 @@ const ConverterWorkspace = () => {
     'slider',
   ];
 
+  // const defaultInputValue = `
+  //   <section class='section contacts'>
+  //     <ul class="test">
+  //       <li class="test">
+  //       <ul class="test">
+  //       <li class="test">2</li>
+  //       <li class="test">2</li>
+  //       <li class="test"></li>
+  //       <li class="test"></li>
+  //     </ul></li>
+  //       <li class="test">2</li>
+  //       <li class="test"></li>
+  //       <li class="test"></li>
+  //     </ul>
+  //   </section>
+  // `;
+
+  // const defaultInputValue = `
+  //   <section class='section contacts'>
+  //     <div class="1"><div class="1"><div class="1"><img src="23" alt="" class="2" /></div></div></div>
+  //   </section>
+  // `;
+
   const defaultInputValue = `
     <section class='section contacts'>
-        <div class="div1">
-          <div class="div2">
-            <div href="" class="test">
-              <div class="div3">
-                <div class="div4">
-                  <a class="logo" type='test'></a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <picture class='test'>
+    <source media="(min-width: 301px)" srcset="img.webp" type='image/webp'/>
+    <source media="(max-width: 300px)" srcset="img_mob.webp" type='image/webp' />
+    <source media="(min-width: 301px)" srcset="img.png" type='image/png' />
+    <source media="(max-width: 300px)" srcset="img_mob.png" type='image/png' />
+    <img class='test1' src="img.png" alt="123" />
+      </picture>
+      <picture class='test'>
+    <source media="(min-width: 301px)" srcset="img.webp" type='image/webp'/>
+    <source media="(max-width: 300px)" srcset="img_mob.webp" type='image/webp' />
+    <source media="(min-width: 301px)" srcset="img.png" type='image/png' />
+    <source media="(max-width: 300px)" srcset="img_mob.png" type='image/png' />
+    <img src="img.png" class='test1' alt="123" />
+      </picture>
     </section>
   `;
   // const defaultInputValue = `
   //   <section class='section contacts'>
+  //       <div class="div1">
+  //         <div class="div2">
+  //           <div href="" class="test">
+  //             <div class="div3">
+  //               <div class="div4">
+  //                 <a class="logo" type='test'></a>
+  //               </div>
+  //             </div>
+  //           </div>
+  //         </div>
+  //       </div>
+  //   </section>
+  // `;
+  // const defaultInputValue = `
+  //   <section class='section contacts'>
   //     <div class='contacts__in'>
   //       <div class='contacts__text fadeEl'>
-  //         <p class='contacts__descr'>This expertise has seen us produce
-  //           <strong> Europe’s largest 360 fan experience </strong>
-  //           for Live Nation, transport ABC television audiences through time in a
-  //           <strong> world first virtual reality experience, </strong>
-  //           and produce the
-  //           <strong> UK’s first immersive gym group for Studio Society.. </strong>
-  //         </p>
+  //         <svg class="icon icon_arrow_down icon--size_mod">
+  //           <use xlink:href="images/sprite/sprite.svg#arrow_down"></use>
+  //         </svg>
   //         <p>And we’re not finished there. As our pioneering industry continues to break new ground, Pebble remains at the forefront of creative innovation and experiential storytelling</p>
   //         <span class='contacts__decor'>123</span>
   //       </div>
@@ -89,8 +131,9 @@ const ConverterWorkspace = () => {
 
     inheritedNestingLevel = 0,
     inheritedCallNestingLevel = 2,
+    ignoreMarker = false,
   }) => {
-    let children = Array.from(parent.children); //@ ex. childNodes
+    let children = Array.from(parent.childNodes); //! why childNodes ?
     let newFieldKey = fieldId;
 
     if (!children.length) return newFieldKey;
@@ -107,23 +150,39 @@ const ConverterWorkspace = () => {
 
         inheritedNestingLevel,
         inheritedCallNestingLevel,
+        ignoreMarker,
       });
 
       return newFieldKey;
     }
-    children = checkNestingText(parent, children);
+
+    children = checkNestingText(parent, children, ignoreMarker);
 
     children.forEach((child, childIndex) => {
       let currentNestingLevel = inheritedNestingLevel + 1;
       let currentCallNestingLevel = inheritedCallNestingLevel;
-
       const { nodeName } = child;
 
       if (
         nodeName === 'UL'
         || nodeName === 'OL'
+        || nodeName === 'LI'
         || checkNodeContainsIgnoreClasses(child, ignoreNodeClassNames)
-      ) return newFieldKey;
+        || ignoreMarker
+      ) {
+
+        childrenIteration({
+          parent: child,
+          fieldId: newFieldKey,
+          groupKeys,
+
+          inheritedVarName,
+          inheritedLinkTextVarCall,
+          inheritedNestingLevel: currentNestingLevel,
+          inheritedCallNestingLevel: currentCallNestingLevel,
+          ignoreMarker: true,
+        });
+      }
 
       else if (nodeName === '#text' && child.textContent.replace(/\s+/g, '') !== '') { // if its just text
         newFieldKey += 1;
@@ -145,7 +204,14 @@ const ConverterWorkspace = () => {
         }
       }
 
-      else if (nodeName === 'A' || child.classList.contains('test')) {
+      else if (nodeName === 'svg') {
+        createPhpIcon({
+          child,
+          nestingLevel: currentNestingLevel,
+        })
+      }
+
+      else if (nodeName === 'A') {
         newFieldKey += 1;
         currentNestingLevel += 1;
 
@@ -189,6 +255,23 @@ const ConverterWorkspace = () => {
         });
       }
 
+      else if (nodeName === 'PICTURE') {
+        newFieldKey += 1;
+
+        createPictureField({
+          parent,
+          child,
+          fieldKey: newFieldKey,
+          fieldsData,
+          currentPageIndex,
+          nestingLevel: currentNestingLevel,
+          callNestingLevel: currentCallNestingLevel,
+          inheritedVarName,
+          groupKeys,
+          pictureBrickKey,
+        });
+      }
+
       else if (nodeName === 'IMG') {
         newFieldKey += 1;
 
@@ -203,7 +286,6 @@ const ConverterWorkspace = () => {
           inheritedVarName,
           groupKeys,
         });
-        // newFieldKey += 1;
       }
 
       else {
@@ -330,7 +412,6 @@ const ConverterWorkspace = () => {
     clearTimeout(inputDebouce);
 
     inputDebouce = setTimeout(() => {
-      console.clear();
       const DOM = document.createElement('div');
       DOM.innerHTML = value;
 
@@ -346,22 +427,30 @@ const ConverterWorkspace = () => {
   };
 
   useEffect(() => {
-    setFieldsData(initPageConfig({
-      updateFieldId: setFieldKeyCounter,
+    let currentKey = Math.floor(Math.random() * (9999999999999 - 1111111111111)) + 1111111111111;
+
+    fieldsData.push(initPageConfig({
       pageTitle: 'About page',
-      insertPath: fieldsData,
+      key: currentKey,
     }));
+
+    currentKey+=1;
+
+    fieldsData.push(createPictureBrick(currentKey));
+
+    setFieldKeyCounter(currentKey);
+    setPictureBrickKey(currentKey);
+    setPageInitializated(true);
   }, []);
 
   useEffect(() => {
-    if (fieldsData.length && !fieldsData[currentPageIndex].initializated) {
-      handleMainInput({ target: { value: defaultInputValue } });
-      fieldsData[currentPageIndex].initializated = true;
+    if (pageInitializated) {
+      if (fieldsData.length && !fieldsData[currentPageIndex].initializated) {
+        handleMainInput({ target: { value: defaultInputValue } });
+        fieldsData[currentPageIndex].initializated = true;
+      }
     }
-  }, [fieldsData]);
-
-  useEffect(() => {
-  }, [fieldKeyCounter]);
+  }, [pageInitializated])
 
   return (
     <div className='converter_workspace'>

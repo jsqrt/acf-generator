@@ -34,7 +34,8 @@ const Textarea = ({
       .replace(/'/g, "&#39;")
       .replace(/"/g, "&quot;") // escape symbols before
 
-      .replace(/\w+(?==&#39;|=&quot;)/g, '<mark class="mark mark--attribute">$&</mark>') // match attribute label
+      .replace(/\S+(?==&#39;|=&quot;)/g, '<mark class="mark mark--attribute">$&</mark>') // match attribute label
+      // .replace(/\w+(?==&#39;|=&quot;)/g, '<mark class="mark mark--attribute">$&</mark>') // match attribute label
       .replace(/(?<==)(&#39;.+&#39;)|(&quot;.+&quot;)/g, '<mark class="mark mark--string">$&</mark>') // match attribute value
       .replace(/(?<=&lt;)\w+/g, '<mark class="mark mark--tag">$&</mark>') // match open tag
       .replace(/(?<=&lt;\/)\w+/g, '<mark class="mark mark--tag">$&</mark>') // match close tag

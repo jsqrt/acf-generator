@@ -33,8 +33,6 @@ const ConverterControllBar = () => {
     } catch (err) {
       window.alert(err.message);
     }
-
-    console.clear();
   };
 
   const handelExportPhp = () => {

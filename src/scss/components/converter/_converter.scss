@@ -6,8 +6,9 @@
   min-height: calc(100vh - var(--height-header));
 }
 
-.converter__in {
+.converter__in.converter__in {
   @extend %global_flex_block_column_wrap_flex-start_stretch;
 
   flex: auto;
+  max-width: unset;
 }

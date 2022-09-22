@@ -12,10 +12,10 @@ export const defineTextFieldLabel = (parent) => {
   let fieldName = 'text';
 
   Array.from(parent.classList).forEach((str) => {
-    if (str.includes('title')) fieldName = 'title';
+    if (str.includes('subtitle')) fieldName = 'subtitle';
+    else if (str.includes('title')) fieldName = 'title';
     else if (str.includes('descr')) fieldName = 'descr';
     else if (str.includes('text')) fieldName = 'text';
-    else if (str.includes('subtitle')) fieldName = 'subtitle';
     else if (str.includes('name')) fieldName = 'name';
     else if (str.includes('position')) fieldName = 'position';
     else if (str.includes('label')) fieldName = 'label';
@@ -74,7 +74,7 @@ export const checkNodeOnText = (node) => {
   return node.nodeName === '#text' || (isTextTag && !hasClassList);
 }
 
-export const checkNestingText = (parent, children) => { // if p span etc in text fields, we replace these children with textNode
+export const checkNestingText = (parent, children, isIgnore) => { // if p span etc in text fields, we replace these children with textNode
   const nodesWithoutSpaces = children.filter((child, index) => {
     const isText = checkNodeOnText(child);
 
@@ -85,6 +85,8 @@ export const checkNestingText = (parent, children) => { // if p span etc in text
 
     return true;
   });
+
+  if (isIgnore) return nodesWithoutSpaces;
 
   let textCounter = 0;
   const textNodeIndex = [];
@@ -119,4 +121,35 @@ export const checkNestingText = (parent, children) => { // if p span etc in text
   }
 
   return filteredNodesArray;
+};
+
+export const createPhpIcon = ({
+  child,
+  nestingLevel,
+}) => {
+  const indent = `\n${getTabChar(nestingLevel)}`
+  const parentIndent = `\n${getTabChar(nestingLevel - 1)}`
+  const iconClasses = child.classList ? Array.from(child.classList) : null;
+
+  if (!iconClasses.length) return;
+
+  let iconName = iconClasses.filter((className, index) => {
+    if (className.includes('icon_')) {
+
+      iconClasses.splice(index, 1);
+      return true;
+    }
+  })[0];
+
+  if (!iconName) return;
+
+  iconName = iconName.replace(/icon_/, '');
+  const restClasses = iconClasses.join(' ');
+
+  if (!iconName) return;
+
+  const getIcon = `<?php MTDUtils::the_icon( '${iconName}', '${restClasses}' ); ?`;
+
+  child.before(indent.concat(getIcon).concat(parentIndent))
+  child.remove();
 };

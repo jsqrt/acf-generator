@@ -61,12 +61,12 @@ export const createSomeField = ({
   fieldKey,
   fieldsData,
   currentPageIndex,
-  varsNestingLevel,
   inheritedVarName,
   groupKeys,
   fieldName,
   inheritType,
   fieldType,
+  pictureBrickKey,
 
   nestingLevel,
   callNestingLevel,
@@ -107,6 +107,7 @@ export const createSomeField = ({
     name: fieldId,
     label: fieldLabel,
     fieldId: fieldKey,
+    pictureBrickKey,
   });
 
   changeDeepProperty({
@@ -137,13 +138,52 @@ export const createSomeField = ({
   }
 };
 
+export const createPictureField = (data) => {
+  const callback = ({
+    child,
+    fieldVarName,
+    nestingLevel,
+    callNestingLevel,
+  }) => {
+    const indent = `${getTabChar(nestingLevel)}`;
+    const childImg = child.querySelector('img');
+    const imgClass = childImg.classList ? Array.from(childImg.classList).join(' ') : '';
+    const picClass = child.classList ? Array.from(child.classList).join(' ') : '';
+
+    const callPicture = `
+${indent}<?php if (${fieldVarName}) { ?>
+  ${indent}<?php MTDUtils::the_picture(
+    ${indent}${fieldVarName},
+    ${indent}array( 'class' => '${picClass}', 'img_class' => '${imgClass}' )
+  ${indent}); ?>
+${indent}<?php } ?>`;
+
+    child.before(callPicture);
+    child.remove();
+  };
+
+  const { fieldVarName } = createSomeField(
+    {
+      ...data,
+      inheritType: 'picture',
+      fieldName: defineImgFieldLabel(data.child),
+    },
+    callback,
+  );
+
+  return {
+    varName: fieldVarName,
+  }
+};
+
 export const createImgField = (data) => {
   const callback = ({
     child,
     fieldVarName,
-    varsNestingLevel,
+    nestingLevel,
+    callNestingLevel,
   }) => {
-    const indent = `\n${getTabChar(varsNestingLevel)}`;
+    const indent = `\n${getTabChar(callNestingLevel)}`;
 
     const varLinkUrl = `${indent}${fieldVarName}_url = ${fieldVarName}['url'];`
     const varLinkTitle = `${indent}${fieldVarName}_alt = ${fieldVarName}['alt'];`

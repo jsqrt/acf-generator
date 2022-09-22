@@ -14,6 +14,22 @@
 	--gl-hr-indent: 5rem;
 }
 
+#root {
+	position: relative;
+	&::before {
+		z-index: -1;
+		position: absolute;
+		left: 0;
+		top: 0;
+
+		width: 100%;
+		height: 100%;
+
+		background: linear-gradient(180deg, #3252c7, #3252c7c9, transparent);
+		content: '';
+	}
+}
+
 html {
 	height: 100%;
 	font: 400 calc(100vw / 1920 * 10)/1.33 $font_1;
@@ -32,8 +48,7 @@ body {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 
-	background: $body_bg;
-	background: linear-gradient(180deg, #3252c7, #3252c7c9, transparent);
+	// background: $body_bg;
 
 	@supports (display: grid) {
 		display: block;
