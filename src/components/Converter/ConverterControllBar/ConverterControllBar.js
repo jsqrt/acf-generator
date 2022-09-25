@@ -3,7 +3,6 @@ import { ConverterSettings } from "../ConverterSettings";
 import { Button } from "../../Button";
 import '../../../scss/components/converter/_converter_controll_bar.scss';
 import FieldsDataContext from '../../../context/fieldsData/FieldsDataContext';
-import { createFieldConfig } from "../utils";
 
 const ConverterControllBar = () => {
 	const { fieldsData, setFieldsData } = useContext(FieldsDataContext);
@@ -72,20 +71,30 @@ const ConverterControllBar = () => {
     document.body.removeChild(a);
   };
 
+  const handleRun = () => {
+
+  };
 
   return (
     <div className="converter_controll_bar">
-      <div className="converter_controll_bar__field converter_controll_bar__field--ofset_mod">
-       <ConverterSettings />
+      <div className="converter_controll_bar__left">
+        <div className="converter_controll_bar__field">
+          <ConverterSettings />
+        </div>
+        <div className="converter_controll_bar__field">
+          <Button mod="converter_controll_bar__btn converter_controll_bar__btn--style_mod" handleClick={handleRun}>Run</Button>
+        </div>
       </div>
-      <div className="converter_controll_bar__field">
-        <Button mod="converter_controll_bar__btn" handleClick={handleCopyToClipboard}>Copy page PHP to clipboard</Button>
-      </div>
-      <div className="converter_controll_bar__field">
-        <Button mod="converter_controll_bar__btn" handleClick={handelExportPhp}>Export PHP file</Button>
-      </div>
-      <div className="converter_controll_bar__field">
-        <Button mod="converter_controll_bar__btn" handleClick={handleExportConfig}>Export ACF config</Button>
+      <div className="converter_controll_bar__right">
+        <div className="converter_controll_bar__field">
+          <Button mod="converter_controll_bar__btn" handleClick={handleCopyToClipboard}>Copy page PHP to clipboard</Button>
+        </div>
+        <div className="converter_controll_bar__field">
+          <Button mod="converter_controll_bar__btn" handleClick={handelExportPhp}>Export PHP file</Button>
+        </div>
+        <div className="converter_controll_bar__field">
+          <Button mod="converter_controll_bar__btn" handleClick={handleExportConfig}>Export ACF config</Button>
+        </div>
       </div>
     </div>
   );

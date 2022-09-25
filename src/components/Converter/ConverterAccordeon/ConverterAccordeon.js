@@ -6,9 +6,8 @@ import '../../../scss/components/converter/_converter_accordeon.scss';
 import classNames from 'classnames';
 
 const ConverterAccordeon = () => {
-	const { fieldsData, setFieldsData } = useContext(FieldsDataContext);
+	const { fieldsData, setFieldsData, settings, setSettings } = useContext(FieldsDataContext);
   const [activeItem, setActiveItem] = useState(1);
-  const [sectionLabel, setSectionLabel] = useState('');
 
   const currentPageIndex = 0;
 
@@ -16,8 +15,15 @@ const ConverterAccordeon = () => {
     const { target } = e;
     const { value } = target;
 
-    fieldsData[currentPageIndex].fields[sectionKey].label = value;
-    console.log(fieldsData);
+    if (settings.sectionsPreset[sectionKey]) {
+      settings.sectionsPreset[sectionKey].sectionLabel = value;
+    } else {
+      settings.sectionsPreset[sectionKey] = {
+        sectionLabel: value,
+      }
+    }
+
+    setSettings({...settings});
   };
 
   return (
@@ -44,7 +50,7 @@ const ConverterAccordeon = () => {
                   className="converter_accordeon__title"
                   key={`accordeon_item_head_title_${sectionLabel}_${index}`}
                   defaultValue={sectionLabel}
-                  onInput={(e) => handleChangeSectionLabel(e, sectionKey)}
+                  onBlur={(e) => handleChangeSectionLabel(e, sectionKey)}
                 />
                 <button type='button' label='Remove section'></button>
                 <button type='button' label='Ignore for ACF-Config'></button>

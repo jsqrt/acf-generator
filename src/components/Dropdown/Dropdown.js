@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Input, Checkbox } from "../Forms";
 import '../../scss/components/_dropdown.scss';
 import classNames from "classnames";
@@ -19,10 +19,11 @@ const Dropdown = ({
           id,
           label,
           checked,
+          handleChange,
         }) => {
           return (
             <li className="dropdown__checkbox" key={id}>
-              <Checkbox id={id}>
+              <Checkbox id={id} checked={checked} handleChange={handleChange}>
                 {label}
               </Checkbox>
             </li>
@@ -35,6 +36,7 @@ const Dropdown = ({
           placeholder,
           label,
           defaultValue,
+          handleInput,
         }) => {
           return (
             <li className="dropdown__input" key={id}>
@@ -43,6 +45,7 @@ const Dropdown = ({
                 id={id}
                 label={label}
                 defaultValue={defaultValue}
+                handleInput={handleInput}
               />
             </li>
           );

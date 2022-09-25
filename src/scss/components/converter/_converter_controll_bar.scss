@@ -2,9 +2,22 @@
 
 .converter_controll_bar {
   @extend %global_flex_block_row_wrap_flex-start_center;
+}
+
+.converter_controll_bar__left {
+  @extend %global_flex_block_row_wrap_flex-start_center;
 
   margin: 0 -2rem -2rem 0;
-  width: 100%;
+
+  &:not(:last-child) {
+    padding-bottom: 2rem;
+  }
+}
+
+.converter_controll_bar__right {
+  @extend %global_flex_block_row_wrap_flex-start_center;
+
+  margin: 0 -2rem -2rem auto;
 
   &:not(:last-child) {
     padding-bottom: 2rem;
@@ -20,6 +33,13 @@
 }
 
 .converter_controll_bar__btn {
-  @extend %accent_btn_1;
-  @extend %btn_size_1;
+  &:not(.converter_controll_bar__btn--style_mod) {
+    @extend %accent_btn_1;
+    @extend %btn_size_1;
+  }
+
+  &.converter_controll_bar__btn--style_mod {
+    @extend %secondary_btn_1;
+    @extend %btn_size_2;
+  }
 }

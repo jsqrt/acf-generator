@@ -4,11 +4,24 @@ const Checkbox = ({
   id,
   children,
   checked,
+  handleChange,
 }) => {
   return (
     <div className="checkbox">
-      <input type='checkbox' id={id} className="checkbox__input" hidden checked={checked} />
-      <label htmlFor={id} className="checkbox__label">{children}</label>
+      <input
+        type='checkbox'
+        id={id}
+        className="checkbox__input"
+        hidden
+        defaultChecked={checked}
+        onChange={handleChange}
+      />
+      <label
+        htmlFor={id}
+        className="checkbox__label"
+      >
+        {children}
+      </label>
     </div>
   );
 };

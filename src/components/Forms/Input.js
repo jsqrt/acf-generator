@@ -7,6 +7,7 @@ const Input = ({
   value,
   label,
   defaultValue,
+  handleInput,
 }) => {
   return (
     <div className="input">
@@ -19,6 +20,7 @@ const Input = ({
         type={type}
         defaultValue={defaultValue}
         id={id}
+        onInput={handleInput}
         className="input__in"
       />
     </div>

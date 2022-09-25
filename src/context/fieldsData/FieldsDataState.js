@@ -11,6 +11,15 @@ const FieldsDataState = ({ children }) => {
       'item',
       'slider',
     ],
+    allowedTypes: {
+      pictures: true,
+      images: true,
+      text: true,
+      icons: true,
+      links: true,
+      buttons: true,
+    },
+    sectionsPreset: [],
   });
 
   return (
@@ -18,6 +27,7 @@ const FieldsDataState = ({ children }) => {
       fieldsData,
       setFieldsData,
       settings,
+      setSettings,
     }}>
       {children}
     </FieldsDataContext.Provider>
