@@ -34,6 +34,7 @@ import {
 import '../../../scss/components/converter/_converter_workspace.scss';
 import FieldsDataContext from '../../../context/fieldsData/FieldsDataContext';
 import { ConverterAccordeon } from '../ConverterAccordeon';
+import { ReactReduxContext } from 'react-redux';
 
 const ConverterWorkspace = () => {
   const [fieldKeyCounter, setFieldKeyCounter] = useState(0);
@@ -43,6 +44,8 @@ const ConverterWorkspace = () => {
   const [pageInitializated, setPageInitializated] = useState(false);
   const [pageKey, setPageKey] = useState(0);
   const [mainInputValue, setMainInputValue] = useState('');
+
+  const { store } = useContext(ReactReduxContext);
 
   // const defaultInputValue = `
   //   <section class='section contacts'>
@@ -432,6 +435,12 @@ const ConverterWorkspace = () => {
     setFieldKeyCounter(startKey + 1);
     setPageInitializated(true);
     setPageKey(startKey);
+
+    store.dispatch({
+      type: 'SET_FIELD_KEY_COUNTER',
+    });
+
+    console.log(store.getState()); //!
   }, []);
 
   useEffect(() => {
@@ -460,6 +469,7 @@ const ConverterWorkspace = () => {
       <div className="converter_workspace__col">
         <ConverterAccordeon />
       </div>
+
     </div>
   );
 };
