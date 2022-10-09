@@ -24,10 +24,10 @@ export const initPageConfig = ({
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "fields": [],
+    "fields": {},
   };
 
-  return pageConfig;
+  return {[key]: pageConfig};
 };
 
 export const createFieldConfig = ({
@@ -395,5 +395,5 @@ export const createPictureBrick = (key) => {
     "modified": 1643991262,
   };
 
-  return brickConfig;
+  return {[`brick_${key}`]: brickConfig};
 };

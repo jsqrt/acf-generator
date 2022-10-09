@@ -1,5 +1,5 @@
+import produce from "immer";
 import {
-  // checkPHPVarsInitializated,
   defineTextFieldLabel,
   toUpperFirstLetter,
   getTabChar,
@@ -15,44 +15,73 @@ export const addNameIterationToStr = (str, fieldNameIteration) => {
 };
 
 const changeDeepProperty = ({
-  prevObj,
-  key,
+  fieldsData,
+  currentPageKey,
   groupKeys,
-  fieldKey,
-  fieldConfig,
   fieldName,
-  index,
+  fieldConfig,
+  fieldKey,
 }) => {
-  let i = index || 0;
 
-  if (groupKeys.length - 1 === i) {
-    if (fieldName) {
-      if (prevObj[key].fieldNames[fieldName] === undefined) {
-        prevObj[key].fieldNames[fieldName] = 1;
-      } else {
-        prevObj[key].fieldNames[fieldName] += 1;
+  let counter = 0;
+
+  let data = fieldsData || fieldConfig;
+
+  if (fieldName) {
+    switch (groupKeys.length) {
+      case 1: {
+        if (data[currentPageKey].fields[groupKeys[0]].fieldNames[fieldName]) {
+          data = produce(data, draft => {draft[currentPageKey].fields[groupKeys[0]].fieldNames[fieldName] += 1});
+        } else {
+          data = produce(data, draft => {draft[currentPageKey].fields[groupKeys[0]].fieldNames[fieldName] = 1});
+        }
+        counter = data[currentPageKey].fields[groupKeys[0]].fieldNames[fieldName];
+        break;
       }
-
-      return prevObj[key].fieldNames[fieldName];
+      case 2: {
+        if (data[currentPageKey].fields[groupKeys[0]].sub_fields[groupKeys[1]].fieldNames[fieldName]) {
+          data = produce(data, draft => {draft[currentPageKey].fields[groupKeys[0]].sub_fields[groupKeys[1]].fieldNames[fieldName] += 1});
+        } else {
+          data = produce(data, draft => {draft[currentPageKey].fields[groupKeys[0]].sub_fields[groupKeys[1]].fieldNames[fieldName] = 1});
+        }
+        counter = data[currentPageKey].fields[groupKeys[0]].sub_fields[groupKeys[1]].fieldNames[fieldName];
+        break;
+      }
+      case 3: {
+        if (data[currentPageKey].fields[groupKeys[0]].sub_fields[groupKeys[1]].sub_fields[groupKeys[2]].fieldNames[fieldName]) {
+          data = produce(data, draft => {draft[currentPageKey].fields[groupKeys[0]].sub_fields[groupKeys[1]].sub_fields[groupKeys[2]].fieldNames[fieldName] += 1});
+        } else {
+          data = produce(data, draft => {draft[currentPageKey].fields[groupKeys[0]].sub_fields[groupKeys[1]].sub_fields[groupKeys[2]].fieldNames[fieldName] = 1});
+        }
+        counter = data[currentPageKey].fields[groupKeys[0]].sub_fields[groupKeys[1]].sub_fields[groupKeys[2]].fieldNames[fieldName];
+        break;
+      }
+      default: break;
     }
+  }
 
-    if (fieldConfig) {
-      prevObj[key].sub_fields[fieldKey] = fieldConfig;
+  if (fieldConfig) {
+    switch (groupKeys.length) {
+      case 1: {
+        data = produce(data, draft => {draft[currentPageKey].fields[groupKeys[0]].sub_fields[fieldKey] = fieldConfig});
+        break;
+      }
+      case 2: {
+        data = produce(data, draft => {draft[currentPageKey].fields[groupKeys[0]].sub_fields[groupKeys[1]].sub_fields[fieldKey] = fieldConfig});
+        break;
+      }
+      case 3: {
+        data = produce(data, draft => {draft[currentPageKey].fields[groupKeys[0]].sub_fields[groupKeys[1]].sub_fields[groupKeys[2]].sub_fields[fieldKey] = fieldConfig});
+        break;
+      }
+      default: break;
     }
+  }
 
-    return;
-  };
-  i += 1;
-
-  return changeDeepProperty({
-    prevObj: prevObj[key].sub_fields,
-    key: groupKeys[i],
-    groupKeys,
-    fieldKey,
-    fieldConfig,
-    fieldName,
-    index: i,
-  });
+  return {
+    data,
+    counter,
+  }
 };
 
 export const createSomeField = ({
@@ -60,7 +89,7 @@ export const createSomeField = ({
   child,
   fieldKey,
   fieldsData,
-  currentPageIndex,
+  currentPageKey,
   inheritedVarName,
   groupKeys,
   fieldName,
@@ -71,19 +100,21 @@ export const createSomeField = ({
   nestingLevel,
   callNestingLevel,
 }, callback = () => null) => {
-  const { suggestedName } = fieldsData[currentPageIndex].fields[groupKeys[0]];
+  const { suggestedName } = fieldsData[currentPageKey].fields[groupKeys[0]];
 
-  const fieldNameIteration = changeDeepProperty({
-    prevObj: fieldsData[currentPageIndex].fields,
+  const { counter: fieldNameCounter, data: dataUpdatedFieldNameCounter } = changeDeepProperty({
     groupKeys,
     fieldName,
-    key: groupKeys[0],
+    currentPageKey,
+    fieldsData,
   });
 
+  fieldsData = dataUpdatedFieldNameCounter;
+
   const fieldSubId = inheritedVarName ? fieldName : [suggestedName, fieldName].join('_');
-  const fieldId = addNameIterationToStr(fieldSubId, fieldNameIteration)
-  const fieldVarName = addNameIterationToStr('$'.concat(fieldName), fieldNameIteration)
-  const fieldLabel = addNameIterationToStr(fieldName, fieldNameIteration)
+  const fieldId = addNameIterationToStr(fieldSubId, fieldNameCounter)
+  const fieldVarName = addNameIterationToStr('$'.concat(fieldName), fieldNameCounter)
+  const fieldLabel = addNameIterationToStr(fieldName, fieldNameCounter)
 
   const indent = `\n${getTabChar(callNestingLevel)}`;
   let getField;
@@ -110,13 +141,16 @@ export const createSomeField = ({
     pictureBrickKey,
   });
 
-  changeDeepProperty({
-    prevObj: fieldsData[currentPageIndex].fields,
-    key: groupKeys[0],
+  const { data: dataUpdatedFieldConfig } = changeDeepProperty({
     groupKeys,
-    fieldKey,
+    currentPageKey,
+    fieldsData,
     fieldConfig,
+    fieldKey,
   });
+
+  fieldsData = dataUpdatedFieldConfig;
+
 
   if (inheritType === 'group' || child.nodeName === '#text') {
     addToVarsGroup(parent, getField);
@@ -269,7 +303,6 @@ export const createLinkField = (data) => {
     child,
     fieldVarName,
     nestingLevel,
-    callNestingLevel,
   }) => {
     const indent = `\n${getTabChar(nestingLevel)}`;
 

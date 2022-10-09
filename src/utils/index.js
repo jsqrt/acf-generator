@@ -153,3 +153,8 @@ export const createPhpIcon = ({
   child.before(indent.concat(getIcon).concat(parentIndent))
   child.remove();
 };
+
+
+export const getRandomKey = () => {
+  return Math.floor(Math.random() * (9999999999999 - 1111111111111)) + 1111111111111;
+};

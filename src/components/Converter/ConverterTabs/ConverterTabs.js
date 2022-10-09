@@ -23,14 +23,14 @@ const ConverterTabs = ({
             accordeon,
           }, index) => {
             if (index === 1) return null;
-            if (!fieldsData[currentPageIndex]) return null;
+            if (!fieldsData[currentPageKey]) return null;
 
-            const sectionsList = fieldsData[currentPageIndex].fields; // брать данные из контекста
+            const sectionsList = fieldsData[currentPageKey].fields; // брать данные из контекста
 
             if (accordeon && Object.values(sectionsList)) {
               return (
                 <ConverterAccordeon
-                  sectionsData={fieldsData[currentPageIndex].fields}
+                  sectionsData={fieldsData[currentPageKey].fields}
                   key={`accordeon_${index}`}
                   index={index}
                 />

@@ -1,13 +1,12 @@
 import React, { useContext } from "react";
+import { ReactReduxContext } from 'react-redux';
+
 import { ConverterSettings } from "../ConverterSettings";
 import { Button } from "../../Button";
 import '../../../scss/components/converter/_converter_controll_bar.scss';
-import FieldsDataContext from '../../../context/fieldsData/FieldsDataContext';
 
 const ConverterControllBar = () => {
-	const { fieldsData, setFieldsData } = useContext(FieldsDataContext);
-  const currentPageIndex = 0;
-
+  const { store } = useContext(ReactReduxContext);
 
   const concatAllPhpToString = (page) => {
     const output = [];
@@ -24,7 +23,9 @@ const ConverterControllBar = () => {
   };
 
   const handleCopyToClipboard = async () => {
-    const output = concatAllPhpToString(fieldsData[currentPageIndex]);
+    const { fieldsData, currentPageKey } = store.getState();
+
+    const output = concatAllPhpToString(fieldsData[currentPageKey]);
 
     try {
       await navigator.clipboard.writeText(output);
@@ -35,28 +36,30 @@ const ConverterControllBar = () => {
   };
 
   const handelExportPhp = () => {
-    fieldsData.forEach((page) => {
+    store
+      .getState()
+        .fieldsData
+          .forEach((page) => {
+            const output = concatAllPhpToString(page);
 
-      const output = concatAllPhpToString(page);
+            if (output) {
+              const blob = new Blob([output], {type: "text/html"});
+              const url  = URL.createObjectURL(blob);
 
-      if (output) {
-        const blob = new Blob([output], {type: "text/html"});
-        const url  = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `${page.title}.php`;
 
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${page.title}.php`;
+              document.body.appendChild(a);
+              a.click();
 
-        document.body.appendChild(a);
-        a.click();
-
-        document.body.removeChild(a);
-      }
-    });
+              document.body.removeChild(a);
+            }
+          });
   };
 
   const handleExportConfig = () => {
-    const json = JSON.stringify(fieldsData);
+    const json = JSON.stringify(store.getState().fieldsData);
 
     const blob = new Blob([json], {type: "application/json"});
     const url  = URL.createObjectURL(blob);

@@ -1,18 +1,21 @@
 import React from 'react';
-import { createStore } from 'redux';
+import { configureStore } from '@reduxjs/toolkit'
+
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from "react-router-dom";
 
 import { Provider } from 'react-redux';
-import configureAppStore from './configureAppStore';
 import { initialStore } from './constants';
 import { rootReducer } from './reducers';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-// const store = configureAppStore();
-const store = createStore(rootReducer, initialStore)
+
+const store = configureStore({
+  reducer: rootReducer,
+  preloadedState: initialStore,
+});
 
 root.render(
   // <React.StrictMode>

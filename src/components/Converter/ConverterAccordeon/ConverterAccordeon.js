@@ -1,35 +1,30 @@
 import React, { useState, useContext } from 'react';
-import FieldsDataContext from '../../../context/fieldsData/FieldsDataContext';
 import { Textarea } from '../../Forms';
 
 import '../../../scss/components/converter/_converter_accordeon.scss';
 import classNames from 'classnames';
+import { ReactReduxContext } from 'react-redux';
 
 const ConverterAccordeon = () => {
-	const { fieldsData, setFieldsData, settings, setSettings } = useContext(FieldsDataContext);
   const [activeItem, setActiveItem] = useState(1);
 
-  const currentPageIndex = 0;
+  const { store } = useContext(ReactReduxContext);
+  const { fieldsData, currentPageKey } = store.getState();
 
   const handleChangeSectionLabel = (e, sectionKey) => {
     const { target } = e;
     const { value } = target;
 
-    if (settings.sectionsPreset[sectionKey]) {
-      settings.sectionsPreset[sectionKey].sectionLabel = value;
-    } else {
-      settings.sectionsPreset[sectionKey] = {
-        sectionLabel: value,
-      }
-    }
-
-    setSettings({...settings});
+    store.dispatch({
+      type: 'ADD_PRESET_SECTION_LABEL',
+      value,
+    });
   };
 
   return (
     <ul className='converter_accordeon'>
-      {fieldsData[currentPageIndex] &&
-        Object.keys(fieldsData[currentPageIndex].fields).map((sectionKey, index) => {
+      {fieldsData[currentPageKey] &&
+        Object.keys(fieldsData[currentPageKey].fields).map((sectionKey, index) => {
           const {
             phpOutput,
             id,
@@ -37,7 +32,7 @@ const ConverterAccordeon = () => {
             disabled,
             type,
             sectionLabel,
-          } = fieldsData[currentPageIndex].fields[sectionKey];
+          } = fieldsData[currentPageKey].fields[sectionKey];
 
           const itemClass = classNames('converter_accordeon__item', {
             'converter_accordeon__item--active_state': activeItem === index,

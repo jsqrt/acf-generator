@@ -3,7 +3,13 @@ import React, {
   useState,
   useContext,
 } from 'react';
+import { ReactReduxContext } from 'react-redux';
+
+import produce from 'immer';
+
 import { Textarea } from '../../Forms';
+import { ConverterAccordeon } from '../ConverterAccordeon';
+import '../../../scss/components/converter/_converter_workspace.scss';
 
 import {
   checkNodeContainsIgnoreClasses,
@@ -11,13 +17,11 @@ import {
   checkNestingText,
   getTabChar,
   createPhpIcon,
-} from '../utils';
+} from '../../../utils';
 
 import {
-  initPageConfig,
   createFieldConfig,
-  createPictureBrick,
-} from '../utils/createConfigUtils';
+} from '../../../utils/createConfigUtils';
 
 import {
   createGroupField,
@@ -25,30 +29,22 @@ import {
   createLinkField,
   createPictureField,
   createTextField,
-} from '../utils/createPhpFieldUtils';
+} from '../../../utils/createPhpFieldUtils';
 
 import {
   createVarsRoot,
-} from '../utils/createVarsUtils';
+} from '../../../utils/createVarsUtils';
 
-import '../../../scss/components/converter/_converter_workspace.scss';
-import FieldsDataContext from '../../../context/fieldsData/FieldsDataContext';
-import { ConverterAccordeon } from '../ConverterAccordeon';
-import { ReactReduxContext } from 'react-redux';
 
 const ConverterWorkspace = () => {
-  // const [fieldKeyCounter, setFieldKeyCounter] = useState(0);
-  const [currentPageIndex, setCurrentPageIndex] = useState(0);
-	const { fieldsData, setFieldsData, settings } = useContext(FieldsDataContext);
-  const [pictureBrickKey, setPictureBrickKey] = useState('');
-  const [pageInitializated, setPageInitializated] = useState(false);
-  const [pageKey, setPageKey] = useState(Math.floor(Math.random() * (9999999999999 - 1111111111111)) + 1111111111111);
   const [mainInputValue, setMainInputValue] = useState('');
-
   const { store } = useContext(ReactReduxContext);
 
   const defaultInputValue = `
     <section class='section contacts'>
+      <a href="3" class='123'>
+        232
+      </a>
       <div class='contacts__in'>
         <div class='contacts__text fadeEl'>
           <svg class="icon icon_arrow_down icon--size_mod">
@@ -61,21 +57,24 @@ const ConverterWorkspace = () => {
     </section>
   `;
 
+  const childrenIteration = (args) => {
+    const {
+      parent,
+      inheritedVarName,
+      groupKeys,
+      inheritedLinkTextVarCall,
 
-  const childrenIteration = ({
-    parent,
-    section,
-    inheritedVarName,
-    groupKeys,
-    fieldId = groupKeys[0],
-    inheritedLinkTextVarCall,
+      fieldId = groupKeys[0],
+      inheritedNestingLevel = 0,
+      inheritedCallNestingLevel = 2,
+      ignoreMarker = false,
+      settings,
+      // currentPageKey,
+      // fieldsData,
+    } = args;
 
-    inheritedNestingLevel = 0,
-    inheritedCallNestingLevel = 2,
-    ignoreMarker = false,
-  }) => {
-    let children = Array.from(parent.childNodes); //! why childNodes ?
-    let newFieldKey = fieldId;
+    let children = Array.from(parent.childNodes);
+    let newFieldKey = fieldId; // 👌
 
     if (!children.length) return newFieldKey;
 
@@ -83,15 +82,8 @@ const ConverterWorkspace = () => {
       parent.classList.contains('_root')
     ) {
       childrenIteration({
+        ...args,
         parent: parent.querySelector('._content'),
-        section,
-        fieldId,
-        inheritedVarName,
-        groupKeys,
-
-        inheritedNestingLevel,
-        inheritedCallNestingLevel,
-        ignoreMarker,
       });
 
       return newFieldKey;
@@ -105,6 +97,7 @@ const ConverterWorkspace = () => {
       let currentNestingLevel = inheritedNestingLevel + 1;
       let currentCallNestingLevel = inheritedCallNestingLevel;
       const { nodeName } = child;
+      args.child = child;
 
       if (
         nodeName === 'UL'
@@ -115,12 +108,9 @@ const ConverterWorkspace = () => {
       ) {
 
         childrenIteration({
+          ...args,
           parent: child,
           fieldId: newFieldKey,
-          groupKeys,
-
-          inheritedVarName,
-          inheritedLinkTextVarCall,
           inheritedNestingLevel: currentNestingLevel,
           inheritedCallNestingLevel: currentCallNestingLevel,
           ignoreMarker: true,
@@ -134,19 +124,13 @@ const ConverterWorkspace = () => {
           child.textContent = inheritedLinkTextVarCall;
         } else if (settings.allowedTypes.text) {
           createTextField({
-            parent,
-            child,
+            ...args,
             fieldKey: newFieldKey,
-            fieldsData,
-            currentPageIndex,
             nestingLevel: currentNestingLevel,
             callNestingLevel: currentCallNestingLevel,
-            inheritedVarName,
-            groupKeys,
           });
         }
       }
-
       else if (nodeName === 'svg' && settings.allowedTypes.icons) {
         createPhpIcon({
           child,
@@ -163,15 +147,10 @@ const ConverterWorkspace = () => {
 
         if (settings.allowedTypes.links) {
           const { fieldVarName } = createGroupField({
-            parent,
-            child,
+            ...args,
             fieldKey: newFieldKey,
-            fieldsData,
-            currentPageIndex,
             callNestingLevel: currentCallNestingLevel,
             nestingLevel: currentNestingLevel,
-            inheritedVarName,
-            groupKeys,
           });
 
           varName = fieldVarName;
@@ -181,11 +160,8 @@ const ConverterWorkspace = () => {
           newFieldKey += 1;
 
           const { linkTextVarCall } = createLinkField({
-            parent,
-            child,
+            ...args,
             fieldKey: newFieldKey,
-            fieldsData,
-            currentPageIndex,
             nestingLevel: currentNestingLevel,
             callNestingLevel: currentCallNestingLevel,
             inheritedVarName: fieldVarName,
@@ -196,6 +172,8 @@ const ConverterWorkspace = () => {
         }
 
         newFieldKey = childrenIteration({
+          ...args,
+
           parent: child,
           fieldId: newFieldKey,
           groupKeys: newGroupKeys || groupKeys,
@@ -211,16 +189,11 @@ const ConverterWorkspace = () => {
         if (settings.allowedTypes.pictures) {
           newFieldKey += 1;
           createPictureField({
-            parent,
-            child,
+            ...args,
             fieldKey: newFieldKey,
-            fieldsData,
-            currentPageIndex,
             nestingLevel: currentNestingLevel,
             callNestingLevel: currentCallNestingLevel,
-            inheritedVarName,
-            groupKeys,
-            pictureBrickKey,
+            pictureBrickKey: store.getState().pictureBrickKey,
           });
         }
       }
@@ -229,27 +202,20 @@ const ConverterWorkspace = () => {
         newFieldKey += 1;
 
         createImgField({
-          parent,
-          child,
+          ...args,
           fieldKey: newFieldKey,
-          fieldsData,
-          currentPageIndex,
           nestingLevel: currentNestingLevel,
           callNestingLevel: currentCallNestingLevel,
-          inheritedVarName,
-          groupKeys,
         });
       }
 
       else {
         newFieldKey = childrenIteration({
+          ...args,
           parent: child,
-          section,
           fieldId: newFieldKey,
-          inheritedVarName,
           inheritedNestingLevel: currentNestingLevel,
           inheritedCallNestingLevel: currentCallNestingLevel,
-          groupKeys,
         });
       }
 
@@ -280,10 +246,14 @@ const ConverterWorkspace = () => {
     })
   }
 
-  const separateSections = ($sectionsNodes) => {
-    fieldsData[currentPageIndex].fields = {};
+  const separateSections = async ($sectionsNodes) => {
+    let {
+      fieldKeyCounter,
+      fieldsData,
+      currentPageKey,
+      settings,
+    } = await store.getState();
 
-    const { fieldKeyCounter } = store.getState();
     let currentFieldKey = fieldKeyCounter + 1;
 
     $sectionsNodes.forEach(($sectionNode, index) => {
@@ -314,26 +284,31 @@ const ConverterWorkspace = () => {
         }
       }
 
-      fieldsData[currentPageIndex].fields[currentFieldKey] = createFieldConfig({
-        type: 'tab',
-        label: sectionLabel,
-        fieldId: currentFieldKey,
-        suggestedName: sectionSuggestedName,
+
+      fieldsData = produce(fieldsData, draft => {
+        draft[currentPageKey].fields[currentFieldKey] = createFieldConfig({
+          type: 'tab',
+          label: sectionLabel,
+          fieldId: currentFieldKey,
+          suggestedName: sectionSuggestedName,
+        });
       });
 
-      fieldsData[currentPageIndex].fields[currentFieldKey + 1] = createFieldConfig({
-        type: 'group',
-        fieldName: sectionSuggestedName,
-        fieldId: currentFieldKey + 1,
-        section: $sectionNode,
-        sectionLabel,
-        suggestedName: sectionSuggestedName,
-        varsInitializated: false,
-        fieldNames: {},
-        groupSubFields: {},
+      fieldsData = produce(fieldsData, draft => {
+        draft[currentPageKey].fields[currentFieldKey + 1] = createFieldConfig({
+          type: 'group',
+          fieldName: sectionSuggestedName,
+          fieldId: currentFieldKey + 1,
+          section: $sectionNode,
+          sectionLabel,
+          suggestedName: sectionSuggestedName,
+          varsInitializated: false,
+          fieldNames: {},
+          groupSubFields: {},
+        });
       });
 
-      const {root, contentBlock, varsBlock } = createVarsRoot({ isSectionVars: true, });
+      const {root, contentBlock } = createVarsRoot({ isSectionVars: true, });
       const sectionInner = $sectionNode.innerHTML;
 
       $sectionNode.innerHTML = '';
@@ -345,27 +320,37 @@ const ConverterWorkspace = () => {
         section: $sectionNode,
         callNestingLevel: 2,
         groupKeys: [currentFieldKey + 1],
+        currentPageKey,
+        fieldsData,
+        settings,
       });
 
       removeAllRoots($sectionNode);
 
       const phpOutput = $sectionNode.outerHTML.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/-->/gi, '').replace(/!--/gi, '');
-      fieldsData[currentPageIndex].fields[currentFieldKey + 1].phpOutput = phpOutput;
+      fieldsData[currentPageKey].fields[currentFieldKey + 1].phpOutput = phpOutput;
 
       currentFieldKey = newFieldKey + 1;
+
+      setTimeout(() => {
+        console.log(fieldsData); //!
+      }, 1000);
     });
 
     store.dispatch({
       type: 'SET_FIELD_KEY_COUNTER',
       value: currentFieldKey,
     });
-    // setFieldKeyCounter(currentFieldKey);
   };
 
   let compileDebouce;
 
   const compile = (value) => {
     if (value === '') return;
+
+    store.dispatch({
+      type: 'CLEAN_PAGE_FIELDS',
+    });
 
     clearTimeout(compileDebouce);
 
@@ -375,18 +360,7 @@ const ConverterWorkspace = () => {
       setMainInputValue(value);
 
       const $sectionsNodes = DOM.querySelectorAll('section');
-
       separateSections($sectionsNodes);
-      setFieldsData([...fieldsData]);
-      // setFieldKeyCounter(pageKey + 1);
-      store.dispatch({
-        type: 'SET_FIELD_KEY_COUNTER',
-        value: pageKey + 1,
-      });
-
-      setTimeout(() => {
-        console.log(fieldsData); //!
-      }, 100);
     }, 200);
   };
 
@@ -397,37 +371,20 @@ const ConverterWorkspace = () => {
   };
 
   useEffect(() => {
-    // const startKey = Math.floor(Math.random() * (9999999999999 - 1111111111111)) + 1111111111111;
+    store.dispatch({
+      type: 'CREATE_PAGE_FIELD',
+    });
 
-    fieldsData.push(initPageConfig({
-      pageTitle: 'About page',
-      key: pageKey,
-    }));
+    store.dispatch({
+      type: 'CREATE_PICTURE_BRICK_FIELD',
+    });
 
-    fieldsData.push(createPictureBrick(pageKey + 1));
-    setPictureBrickKey(pageKey + 1);
-    // setFieldKeyCounter(startKey + 1);
     store.dispatch({
       type: 'SET_FIELD_KEY_COUNTER',
     });
-    setPageInitializated(true);
-    // setPageKey(startKey);
 
-    console.log(store.getState()); //!
+    compile(mainInputValue || defaultInputValue);
   }, []);
-
-  useEffect(() => {
-    if (pageInitializated) {
-      if (fieldsData.length && !fieldsData[currentPageIndex].initializated) {
-        compile(defaultInputValue);
-        fieldsData[currentPageIndex].initializated = true;
-      }
-    }
-  }, [pageInitializated])
-
-  useEffect(() => {
-    compile(mainInputValue);
-  }, [settings]);
 
   return (
     <div className='converter_workspace'>
