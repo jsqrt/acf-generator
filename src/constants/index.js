@@ -15,6 +15,6 @@ export const initialStore = {
     buttons: true,
   },
   sectionsPreset: [],
-  fieldKeyCounter: 0,
+  fieldKeyCounter: Math.floor(Math.random() * (9999999999999 - 1111111111111)) + 1111111111111,
   pictureBrickFieldKey: Math.floor(Math.random() * (9999999999999 - 1111111111111)) + 1111111111111,
 };

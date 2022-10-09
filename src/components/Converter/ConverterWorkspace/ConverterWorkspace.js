@@ -37,51 +37,16 @@ import { ConverterAccordeon } from '../ConverterAccordeon';
 import { ReactReduxContext } from 'react-redux';
 
 const ConverterWorkspace = () => {
-  const [fieldKeyCounter, setFieldKeyCounter] = useState(0);
+  // const [fieldKeyCounter, setFieldKeyCounter] = useState(0);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
 	const { fieldsData, setFieldsData, settings } = useContext(FieldsDataContext);
   const [pictureBrickKey, setPictureBrickKey] = useState('');
   const [pageInitializated, setPageInitializated] = useState(false);
-  const [pageKey, setPageKey] = useState(0);
+  const [pageKey, setPageKey] = useState(Math.floor(Math.random() * (9999999999999 - 1111111111111)) + 1111111111111);
   const [mainInputValue, setMainInputValue] = useState('');
 
   const { store } = useContext(ReactReduxContext);
 
-  // const defaultInputValue = `
-  //   <section class='section contacts'>
-  //     <ul class="test">
-  //       <li class="test">
-  //       <ul class="test">
-  //       <li class="test">2</li>
-  //       <li class="test">2</li>
-  //       <li class="test"></li>
-  //       <li class="test"></li>
-  //     </ul></li>
-  //       <li class="test">2</li>
-  //       <li class="test"></li>
-  //       <li class="test"></li>
-  //     </ul>
-  //   </section>
-  // `;
-
-  // const defaultInputValue = `
-  //   <section class='section contacts'>
-  //     <div class="1"><div class="1"><div class="1"><img src="23" alt="" class="2" /></div></div></div>
-  //   </section>
-  // `;
-
-  // const defaultInputValue = `
-  //   <section class='section contacts'>
-  //     <img src="img.png" class='test1' alt="123" />
-  //   </section>
-  // `;
-
-
-  // const defaultInputValue = `
-  //   <section class='section contacts'>
-  //     <a class="logo" type='test'></a>
-  //   </section>
-  // `;
   const defaultInputValue = `
     <section class='section contacts'>
       <div class='contacts__in'>
@@ -318,6 +283,7 @@ const ConverterWorkspace = () => {
   const separateSections = ($sectionsNodes) => {
     fieldsData[currentPageIndex].fields = {};
 
+    const { fieldKeyCounter } = store.getState();
     let currentFieldKey = fieldKeyCounter + 1;
 
     $sectionsNodes.forEach(($sectionNode, index) => {
@@ -389,7 +355,11 @@ const ConverterWorkspace = () => {
       currentFieldKey = newFieldKey + 1;
     });
 
-    setFieldKeyCounter(currentFieldKey);
+    store.dispatch({
+      type: 'SET_FIELD_KEY_COUNTER',
+      value: currentFieldKey,
+    });
+    // setFieldKeyCounter(currentFieldKey);
   };
 
   let compileDebouce;
@@ -408,7 +378,11 @@ const ConverterWorkspace = () => {
 
       separateSections($sectionsNodes);
       setFieldsData([...fieldsData]);
-      setFieldKeyCounter(pageKey + 1);
+      // setFieldKeyCounter(pageKey + 1);
+      store.dispatch({
+        type: 'SET_FIELD_KEY_COUNTER',
+        value: pageKey + 1,
+      });
 
       setTimeout(() => {
         console.log(fieldsData); //!
@@ -423,22 +397,21 @@ const ConverterWorkspace = () => {
   };
 
   useEffect(() => {
-    const startKey = Math.floor(Math.random() * (9999999999999 - 1111111111111)) + 1111111111111;
+    // const startKey = Math.floor(Math.random() * (9999999999999 - 1111111111111)) + 1111111111111;
 
     fieldsData.push(initPageConfig({
       pageTitle: 'About page',
-      key: startKey,
+      key: pageKey,
     }));
 
-    fieldsData.push(createPictureBrick(startKey + 1));
-    setPictureBrickKey(startKey + 1);
-    setFieldKeyCounter(startKey + 1);
-    setPageInitializated(true);
-    setPageKey(startKey);
-
+    fieldsData.push(createPictureBrick(pageKey + 1));
+    setPictureBrickKey(pageKey + 1);
+    // setFieldKeyCounter(startKey + 1);
     store.dispatch({
       type: 'SET_FIELD_KEY_COUNTER',
     });
+    setPageInitializated(true);
+    // setPageKey(startKey);
 
     console.log(store.getState()); //!
   }, []);
