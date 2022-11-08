@@ -5,7 +5,10 @@ import { ConverterSettings } from "../ConverterSettings";
 import { Button } from "../../Button";
 import '../../../scss/components/converter/_converter_controll_bar.scss';
 
-const ConverterControllBar = () => {
+const ConverterControllBar = ({
+  handleCompile,
+  mainInputValue,
+}) => {
   const { store } = useContext(ReactReduxContext);
 
   const concatAllPhpToString = (page) => {
@@ -35,27 +38,31 @@ const ConverterControllBar = () => {
     }
   };
 
-  const handelExportPhp = () => {
-    store
-      .getState()
-        .fieldsData
-          .forEach((page) => {
-            const output = concatAllPhpToString(page);
+  const handleExportPhp = () => {
+    const { fieldsData } = store.getState();
 
-            if (output) {
-              const blob = new Blob([output], {type: "text/html"});
-              const url  = URL.createObjectURL(blob);
+    Object.entries(fieldsData)
+      .filter(([key, value]) => {
+        if (!key.includes('brick')) return true;
+        return false;
+      })
+      .map(([key, value]) => {
+        const output = concatAllPhpToString(value);
 
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `${page.title}.php`;
+        if (output) {
+          const blob = new Blob([output], {type: "text/html"});
+          const url  = URL.createObjectURL(blob);
 
-              document.body.appendChild(a);
-              a.click();
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `ACF-Generator-output.php`;
 
-              document.body.removeChild(a);
-            }
-          });
+          document.body.appendChild(a);
+          a.click();
+
+          document.body.removeChild(a);
+        }
+      });
   };
 
   const handleExportConfig = () => {
@@ -75,7 +82,7 @@ const ConverterControllBar = () => {
   };
 
   const handleRun = () => {
-
+    handleCompile(mainInputValue);
   };
 
   return (
@@ -93,7 +100,7 @@ const ConverterControllBar = () => {
           <Button mod="converter_controll_bar__btn" handleClick={handleCopyToClipboard}>Copy page PHP to clipboard</Button>
         </div>
         <div className="converter_controll_bar__field">
-          <Button mod="converter_controll_bar__btn" handleClick={handelExportPhp}>Export PHP file</Button>
+          <Button mod="converter_controll_bar__btn" handleClick={handleExportPhp}>Export PHP file</Button>
         </div>
         <div className="converter_controll_bar__field">
           <Button mod="converter_controll_bar__btn" handleClick={handleExportConfig}>Export ACF config</Button>

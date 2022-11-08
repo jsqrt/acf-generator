@@ -3,10 +3,14 @@ import { Button } from "../../Button";
 import { Dropdown } from "../../Dropdown";
 import '../../../scss/components/converter/_converter_settings.scss';
 import FieldsDataContext from "../../../context/fieldsData/FieldsDataContext";
+import { ReactReduxContext } from 'react-redux';
 
 const ConverterSettings = () => {
-	const { settings, setSettings } = useContext(FieldsDataContext);
+	// const { settings, setSettings } = useContext(FieldsDataContext);
+  const { store } = useContext(ReactReduxContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const { settings } = store.getState();
 
   const handleToggleDropdown = (e) => {
     e.preventDefault();
@@ -19,37 +23,67 @@ const ConverterSettings = () => {
         id: 'settings_drop_1_check_0',
         label: 'Pictures',
         checked: settings.allowedTypes.pictures,
-        handleChange: () => settings.allowedTypes.pictures = !settings.allowedTypes.pictures,
+        handleChange: () => {
+          store.dispatch({
+            type: 'REVERSE_ALLOWED_TYPE',
+            key: 'pictures',
+          });
+        },
       },
       {
         id: 'settings_drop_1_check_1',
         label: 'Images',
         checked: settings.allowedTypes.images,
-        handleChange: () => settings.allowedTypes.images = !settings.allowedTypes.images,
+        handleChange: () => {
+          store.dispatch({
+            type: 'REVERSE_ALLOWED_TYPE',
+            key: 'images',
+          });
+        },
       },
       {
         id: 'settings_drop_1_check_2',
         label: 'Text contents',
         checked: settings.allowedTypes.text,
-        handleChange: () => settings.allowedTypes.text = !settings.allowedTypes.text,
+        handleChange: () => {
+          store.dispatch({
+            type: 'REVERSE_ALLOWED_TYPE',
+            key: 'text',
+          });
+        },
       },
       {
         id: 'settings_drop_1_check_3',
         label: 'Links',
         checked: settings.allowedTypes.links,
-        handleChange: () => settings.allowedTypes.links = !settings.allowedTypes.links,
+        handleChange: () => {
+          store.dispatch({
+            type: 'REVERSE_ALLOWED_TYPE',
+            key: 'links',
+          });
+        },
       },
       {
         id: 'settings_drop_1_check_4',
         label: 'Buttons',
         checked: settings.allowedTypes.buttons,
-        handleChange: () => settings.allowedTypes.buttons = !settings.allowedTypes.buttons,
+        handleChange: () => {
+          store.dispatch({
+            type: 'REVERSE_ALLOWED_TYPE',
+            key: 'buttons',
+          });
+        },
       },
       {
         id: 'settings_drop_1_check_5',
         label: 'Icons',
         checked: settings.allowedTypes.icons,
-        handleChange: () => settings.allowedTypes.icons = !settings.allowedTypes.icons,
+        handleChange: () => {
+          store.dispatch({
+            type: 'REVERSE_ALLOWED_TYPE',
+            key: 'icons',
+          });
+        },
       },
     ],
     inputs: [
@@ -60,11 +94,17 @@ const ConverterSettings = () => {
         defaultValue: settings.ignoreClasses.join(','),
         handleInput: (e) => {
           const { value } = e.target;
-          settings.ignoreClasses = value.split(',').map((el) => {
-            if (el !== '' & el !== ' ') {
-              return el.replace(/[\s.]/g, '');
-            }
-          }).filter((el) => !!el);
+          store.dispatch({
+            type: 'UPDATE_IGNORE_CLASSNAMES',
+            value: value
+              .split(',')
+                .map((el) => {
+                  if (el !== '' & el !== ' ') {
+                    return el.replace(/[\s.]/g, '');
+                  }
+                })
+                  .filter((el) => !!el),
+          });
         }
       }
     ],

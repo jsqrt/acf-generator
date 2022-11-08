@@ -6,10 +6,11 @@ import classNames from 'classnames';
 import { ReactReduxContext } from 'react-redux';
 
 const ConverterAccordeon = () => {
-  const [activeItem, setActiveItem] = useState(1);
-
   const { store } = useContext(ReactReduxContext);
-  const { fieldsData, currentPageKey } = store.getState();
+
+  const [activeItem, setActiveItem] = useState(1);
+  const [fieldsData, setFieldsData] = useState(store.getState().fieldsData);
+  const [currentPageKey, setCurrentPageKey] = useState(store.getState().currentPageKey);
 
   const handleChangeSectionLabel = (e, sectionKey) => {
     const { target } = e;
@@ -18,13 +19,19 @@ const ConverterAccordeon = () => {
     store.dispatch({
       type: 'ADD_PRESET_SECTION_LABEL',
       value,
+      key: sectionKey,
     });
   };
 
+  store.subscribe(() => {
+    const { fieldsData, currentPageKey } = store.getState();
+    setFieldsData(fieldsData);
+    setCurrentPageKey(currentPageKey);
+  });
+
   return (
     <ul className='converter_accordeon'>
-      {fieldsData[currentPageKey] &&
-        Object.keys(fieldsData[currentPageKey].fields).map((sectionKey, index) => {
+      {fieldsData[currentPageKey] && Object.keys(fieldsData[currentPageKey]?.fields).map((sectionKey, index) => {
           const {
             phpOutput,
             id,
@@ -46,6 +53,7 @@ const ConverterAccordeon = () => {
                   key={`accordeon_item_head_title_${sectionLabel}_${index}`}
                   defaultValue={sectionLabel}
                   onBlur={(e) => handleChangeSectionLabel(e, sectionKey)}
+                  disabled
                 />
                 <button type='button' label='Remove section'></button>
                 <button type='button' label='Ignore for ACF-Config'></button>

@@ -24,8 +24,8 @@ const FieldsDataState = ({ children }) => {
 
   return (
     <FieldsDataContext.Provider value={{
-      fieldsData,
-      setFieldsData,
+      // fieldsData,
+      // setFieldsData,
       settings,
       setSettings,
     }}>

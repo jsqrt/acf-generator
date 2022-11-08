@@ -1,1 +1,11 @@
+@include font_face('RobotoMono-Light', 'RobotoMono', $font_path, 300);
 @include font_face('RobotoMono-Regular', 'RobotoMono', $font_path, 400);
+@include font_face('RobotoMono-Medium', 'RobotoMono', $font_path, 500);
+@include font_face('RobotoMono-SemiBold', 'RobotoMono', $font_path, 600);
+@include font_face('RobotoMono-Bold', 'RobotoMono', $font_path, 700);
+
+// @include font_face('RobotoMono-LightItalic', 'RobotoMono', $font_path, 300, 'italic');
+// @include font_face('RobotoMono-Italic', 'RobotoMono', $font_path, 400, 'italic');
+// @include font_face('RobotoMono-MediumItalic', 'RobotoMono', $font_path, 500, 'italic');
+// @include font_face('RobotoMono-SemiBoldItalic', 'RobotoMono', $font_path, 600, 'italic');
+// @include font_face('RobotoMono-BoldItalic', 'RobotoMono', $font_path, 700, 'italic');

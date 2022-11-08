@@ -9,6 +9,33 @@ import {
 const rootReducer = (state, action) => {
 
   switch (action.type) {
+    case 'REVERSE_ALLOWED_TYPE':
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          allowedTypes: {
+            ...state.settings.allowedTypes,
+            [action.key]: !state.settings.allowedTypes[action.key],
+          }
+        },
+      }
+
+    case 'UPDATE_IGNORE_CLASSNAMES':
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          ignoreClasses: action.value,
+        },
+      }
+
+    case 'UPDATE_FIELDS_DATA':
+      return {
+        ...state,
+        fieldsData: action.value,
+      }
+
     case 'ADD_PRESET_SECTION_LABEL':
       return {
         ...state,

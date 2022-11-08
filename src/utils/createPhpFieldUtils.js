@@ -21,8 +21,8 @@ const changeDeepProperty = ({
   fieldName,
   fieldConfig,
   fieldKey,
+  store,
 }) => {
-
   let counter = 0;
 
   let data = fieldsData || fieldConfig;
@@ -99,17 +99,18 @@ export const createSomeField = ({
 
   nestingLevel,
   callNestingLevel,
+  store,
 }, callback = () => null) => {
   const { suggestedName } = fieldsData[currentPageKey].fields[groupKeys[0]];
 
-  const { counter: fieldNameCounter, data: dataUpdatedFieldNameCounter } = changeDeepProperty({
+
+  let { counter: fieldNameCounter, data: dataUpdatedFieldNameCounter } = changeDeepProperty({
     groupKeys,
     fieldName,
     currentPageKey,
     fieldsData,
+    store,
   });
-
-  fieldsData = dataUpdatedFieldNameCounter;
 
   const fieldSubId = inheritedVarName ? fieldName : [suggestedName, fieldName].join('_');
   const fieldId = addNameIterationToStr(fieldSubId, fieldNameCounter)
@@ -144,13 +145,15 @@ export const createSomeField = ({
   const { data: dataUpdatedFieldConfig } = changeDeepProperty({
     groupKeys,
     currentPageKey,
-    fieldsData,
+    fieldsData: dataUpdatedFieldNameCounter,
     fieldConfig,
     fieldKey,
   });
 
-  fieldsData = dataUpdatedFieldConfig;
-
+  store.dispatch({
+    type: 'UPDATE_FIELDS_DATA',
+    value: dataUpdatedFieldConfig,
+  });
 
   if (inheritType === 'group' || child.nodeName === '#text') {
     addToVarsGroup(parent, getField);
@@ -299,6 +302,7 @@ export const createGroupField = (data) => {
 };
 
 export const createLinkField = (data) => {
+
   const callback = ({
     child,
     fieldVarName,

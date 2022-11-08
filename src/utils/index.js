@@ -148,7 +148,7 @@ export const createPhpIcon = ({
 
   if (!iconName) return;
 
-  const getIcon = `<?php MTDUtils::the_icon( '${iconName}', '${restClasses}' ); ?`;
+  const getIcon = `<?php MTDUtils::the_icon( '${iconName}', '${restClasses}' ); ?>`;
 
   child.before(indent.concat(getIcon).concat(parentIndent))
   child.remove();

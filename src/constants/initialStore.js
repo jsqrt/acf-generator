@@ -1,7 +1,7 @@
 import { getRandomKey } from "../utils";
 
 export const initialStore = {
-  fieldsData: [],
+  fieldsData: {},
   settings: {
     ignoreClasses: [
       'list',

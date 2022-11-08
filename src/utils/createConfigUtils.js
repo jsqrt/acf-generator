@@ -45,6 +45,7 @@ export const createFieldConfig = ({
   varsInitializated,
   pictureBrickKey,
 }) => {
+
   const fieldKey = `field_${fieldId}`;
 
   const typeImgConfig = {
