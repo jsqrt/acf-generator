@@ -41,22 +41,7 @@ import {
 
 const Converter = () => {
   const { store } = useContext(ReactReduxContext);
-  const defaultInputValue = `
-    <section class='section contacts'>
-      <a href="3" class='123'>
-        232
-      </a>
-      <div class='contacts__in'>
-        <div class='contacts__text fadeEl'>
-          <svg class="icon icon_arrow_down icon--size_mod">
-            <use xlink:href="images/sprite/sprite.svg#arrow_down"></use>
-          </svg>
-          <p>And we’re not finished there. As our pioneering industry continues to break new ground, Pebble remains at the forefront of creative innovation and experiential storytelling</p>
-          <span class='contacts__decor'>123</span>
-        </div>
-      </div>
-    </section>
-  `;
+  const defaultInputValue = ``;
   const [mainInputValue, setMainInputValue] = useState(defaultInputValue);
 
   const childrenIteration = (args) => {
@@ -213,7 +198,7 @@ const Converter = () => {
             fieldKey: newFieldKey,
             nestingLevel: currentNestingLevel,
             callNestingLevel: currentCallNestingLevel,
-            pictureBrickKey: store.getState().pictureBrickKey,
+            pictureBrickKey: store.getState().pictureBrickFieldKey,
             store,
           });
           fieldsData = store.getState().fieldsData;
@@ -377,7 +362,7 @@ const Converter = () => {
       currentFieldKey = newFieldKey + 1;
 
       setTimeout(() => {
-        console.log(store.getState().fieldsData); //!
+        console.log(store.getState()); //!
       }, 3000);
     });
 
@@ -388,16 +373,16 @@ const Converter = () => {
   };
 
   const compile = (value) => {
-    if (value === '') return;
-
+    setMainInputValue(value);
 
     store.dispatch({
       type: 'CLEAN_PAGE_FIELDS',
     });
 
+    if (value === '') return;
+
     const DOM = document.createElement('div');
     DOM.innerHTML = value;
-    setMainInputValue(value);
 
     const $sectionsNodes = DOM.querySelectorAll('section');
     separateSections($sectionsNodes);

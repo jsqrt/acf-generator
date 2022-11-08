@@ -16,7 +16,7 @@ const ConverterWorkspace = ({
           id="main_input"
           defaultValue={defaultInputValue}
           handleInput={handleMainInput}
-          placeholder='Input some section here'
+          placeholder='Insert your page here'
         />
       </div>
       <div className="converter_workspace__col">

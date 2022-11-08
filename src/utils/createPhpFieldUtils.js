@@ -31,8 +31,11 @@ const changeDeepProperty = ({
     switch (groupKeys.length) {
       case 1: {
         if (data[currentPageKey].fields[groupKeys[0]].fieldNames[fieldName]) {
+          console.log(fieldName, 'if'); //!
+
           data = produce(data, draft => {draft[currentPageKey].fields[groupKeys[0]].fieldNames[fieldName] += 1});
         } else {
+          console.log(fieldName, 'else'); //!
           data = produce(data, draft => {draft[currentPageKey].fields[groupKeys[0]].fieldNames[fieldName] = 1});
         }
         counter = data[currentPageKey].fields[groupKeys[0]].fieldNames[fieldName];
@@ -88,7 +91,7 @@ export const createSomeField = ({
   parent,
   child,
   fieldKey,
-  fieldsData,
+  // fieldsData,
   currentPageKey,
   inheritedVarName,
   groupKeys,
@@ -101,6 +104,7 @@ export const createSomeField = ({
   callNestingLevel,
   store,
 }, callback = () => null) => {
+  const { fieldsData } = store.getState();
   const { suggestedName } = fieldsData[currentPageKey].fields[groupKeys[0]];
 
 
@@ -193,7 +197,7 @@ ${indent}<?php if (${fieldVarName}) { ?>
     ${indent}${fieldVarName},
     ${indent}array( 'class' => '${picClass}', 'img_class' => '${imgClass}' )
   ${indent}); ?>
-${indent}<?php } ?>`;
+${indent}<?php } ?>\n${getTabChar(nestingLevel - 1)}`;
 
     child.before(callPicture);
     child.remove();

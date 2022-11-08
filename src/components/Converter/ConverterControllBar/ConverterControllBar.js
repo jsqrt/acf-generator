@@ -1,15 +1,18 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { ReactReduxContext } from 'react-redux';
 
 import { ConverterSettings } from "../ConverterSettings";
 import { Button } from "../../Button";
 import '../../../scss/components/converter/_converter_controll_bar.scss';
+import { useEffect } from "react";
 
 const ConverterControllBar = ({
   handleCompile,
   mainInputValue,
 }) => {
   const { store } = useContext(ReactReduxContext);
+  const [fieldsData, setFieldsData] = useState(store.getState().fieldsData);
+  const [currentPageIndex, setCurrentPageIndex] = useState(store.getState().currentPageIndex);
 
   const concatAllPhpToString = (page) => {
     const output = [];
@@ -83,7 +86,18 @@ const ConverterControllBar = ({
 
   const handleRun = () => {
     handleCompile(mainInputValue);
+    // console.log(mainInputValue); //!
   };
+
+  useEffect(() => {
+
+    store.subscribe(() => {
+      const { fieldsData: data, currentPageKey } = store.getState();
+
+      setFieldsData(data);
+      setCurrentPageIndex(currentPageKey);
+    });
+  })
 
   return (
     <div className="converter_controll_bar">
@@ -95,17 +109,19 @@ const ConverterControllBar = ({
           <Button mod="converter_controll_bar__btn converter_controll_bar__btn--style_mod" handleClick={handleRun}>Run</Button>
         </div>
       </div>
-      <div className="converter_controll_bar__right">
-        <div className="converter_controll_bar__field">
-          <Button mod="converter_controll_bar__btn" handleClick={handleCopyToClipboard}>Copy page PHP to clipboard</Button>
+      {fieldsData[currentPageIndex] && Object.keys(fieldsData[currentPageIndex].fields)[0] && ( // check if section exist
+        <div className="converter_controll_bar__right">
+          <div className="converter_controll_bar__field">
+            <Button mod="converter_controll_bar__btn" handleClick={handleCopyToClipboard}>Copy page PHP to clipboard</Button>
+          </div>
+          <div className="converter_controll_bar__field">
+            <Button mod="converter_controll_bar__btn" handleClick={handleExportPhp}>Export PHP file</Button>
+          </div>
+          <div className="converter_controll_bar__field">
+            <Button mod="converter_controll_bar__btn" handleClick={handleExportConfig}>Export ACF config</Button>
+          </div>
         </div>
-        <div className="converter_controll_bar__field">
-          <Button mod="converter_controll_bar__btn" handleClick={handleExportPhp}>Export PHP file</Button>
-        </div>
-        <div className="converter_controll_bar__field">
-          <Button mod="converter_controll_bar__btn" handleClick={handleExportConfig}>Export ACF config</Button>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

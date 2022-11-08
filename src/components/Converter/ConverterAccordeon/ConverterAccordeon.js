@@ -4,6 +4,7 @@ import { Textarea } from '../../Forms';
 import '../../../scss/components/converter/_converter_accordeon.scss';
 import classNames from 'classnames';
 import { ReactReduxContext } from 'react-redux';
+import { useEffect } from 'react';
 
 const ConverterAccordeon = () => {
   const { store } = useContext(ReactReduxContext);
@@ -23,10 +24,12 @@ const ConverterAccordeon = () => {
     });
   };
 
-  store.subscribe(() => {
-    const { fieldsData, currentPageKey } = store.getState();
-    setFieldsData(fieldsData);
-    setCurrentPageKey(currentPageKey);
+  useEffect(() => {
+    store.subscribe(() => {
+      const { fieldsData, currentPageKey } = store.getState();
+      setFieldsData(fieldsData);
+      setCurrentPageKey(currentPageKey);
+    });
   });
 
   return (

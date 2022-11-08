@@ -1,21 +1,25 @@
 @import "../../helpers/helpers_all";
 
 .converter_controll_bar {
-  @extend %global_flex_block_row_wrap_flex-start_center;
-}
-
-.converter_controll_bar__left {
-  @extend %global_flex_block_row_wrap_flex-start_center;
-
-  margin: 0 -2rem -2rem 0;
+  @extend %global_flex_block_row_wrap_flex-start;
 
   &:not(:last-child) {
-    padding-bottom: 2rem;
+    margin-bottom: 2rem;
   }
 }
 
+.converter_controll_bar__left {
+  @extend %global_flex_block_row_wrap_flex-start;
+
+  margin: 0 -2rem -2rem 0;
+
+  // &:not(:last-child) {
+  //   padding-bottom: 2rem;
+  // }
+}
+
 .converter_controll_bar__right {
-  @extend %global_flex_block_row_wrap_flex-start_center;
+  @extend %global_flex_block_row_wrap_flex-start;
 
   margin: 0 -2rem -2rem auto;
 
