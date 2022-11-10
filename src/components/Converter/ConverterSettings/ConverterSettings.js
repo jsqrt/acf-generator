@@ -2,11 +2,9 @@ import React, { useState, useContext } from "react";
 import { Button } from "../../Button";
 import { Dropdown } from "../../Dropdown";
 import '../../../scss/components/converter/_converter_settings.scss';
-import FieldsDataContext from "../../../context/fieldsData/FieldsDataContext";
 import { ReactReduxContext } from 'react-redux';
 
 const ConverterSettings = () => {
-	// const { settings, setSettings } = useContext(FieldsDataContext);
   const { store } = useContext(ReactReduxContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
