@@ -1,14 +1,14 @@
 import React from 'react';
-import { Homepage } from "./routes";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route } from 'react-router-dom';
+import { Homepage } from './routes';
 import './scss/main_global.scss';
 
-function App() {
+const App = () => {
 	return (
 		<Routes>
 			<Route path="/" element={<Homepage />} />
 		</Routes>
 	);
-}
+};
 
 export default App;

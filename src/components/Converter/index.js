@@ -1,5 +1,5 @@
-import Converter from './Converter.js';
+import Converter from './Converter';
 
 export {
-  Converter,
+	Converter,
 };
