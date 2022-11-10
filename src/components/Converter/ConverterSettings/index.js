@@ -1,5 +1,5 @@
-import ConverterSettings from './ConverterSettings.js';
+import ConverterSettings from './ConverterSettings';
 
 export {
-  ConverterSettings,
+	ConverterSettings,
 };

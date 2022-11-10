@@ -1,5 +1,5 @@
-import Homepage from "./Homepage.js";
+import Homepage from './Homepage';
 
 export {
-  Homepage,
+	Homepage,
 };

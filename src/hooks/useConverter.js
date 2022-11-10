@@ -1,393 +1,384 @@
-import React, { useContext, useEffect, useState } from 'react';
+/* eslint-disable no-param-reassign */
+import React, {
+	useContext,
+	useEffect,
+	useState,
+} from 'react';
+import { ReactReduxContext } from 'react-redux';
 import produce from 'immer';
 
 import {
-  checkNodeContainsIgnoreClasses,
-  toUpperFirstLetter,
-  checkNestingText,
-  getTabChar,
-  createPhpIcon,
+	checkNodeContainsIgnoreClasses,
+	toUpperFirstLetter,
+	checkNestingText,
+	getTabChar,
+	createPhpIcon,
 } from '../utils';
 
 import {
-  createFieldConfig,
+	createFieldConfig,
 } from '../utils/createConfigUtils';
 
 import {
-  createGroupField,
-  createImgField,
-  createLinkField,
-  createPictureField,
-  createTextField,
+	createGroupField,
+	createImgField,
+	createLinkField,
+	createPictureField,
+	createTextField,
 } from '../utils/createPhpFieldUtils';
 
 import {
-  createVarsRoot,
+	createVarsRoot,
 } from '../utils/createVarsUtils';
 import { removeAllRoots } from '../utils/converterUtils';
-import { ReactReduxContext } from 'react-redux';
-
 
 const useConverter = ({
-  defaultInputValue,
+	defaultInputValue,
 }) => {
-  const [mainInputValue, setMainInputValue] = useState(defaultInputValue);
-  const { store } = useContext(ReactReduxContext);
+	const [mainInputValue, setMainInputValue] = useState(defaultInputValue);
+	const { store } = useContext(ReactReduxContext);
 
-  const childrenIteration = (args) => {
-    const {
-      parent,
-      inheritedVarName,
-      groupKeys,
-      inheritedLinkTextVarCall,
+	const childrenIteration = (args) => {
+		const {
+			parent,
+			inheritedVarName,
+			groupKeys,
+			inheritedLinkTextVarCall,
 
-      fieldId = groupKeys[0],
-      inheritedNestingLevel = 0,
-      inheritedCallNestingLevel = 2,
-      ignoreMarker = false,
-      settings,
-      // currentPageKey,
-      // fieldsData,
-    } = args;
-    let fieldsData = args.fieldsData;
+			fieldId = groupKeys[0],
+			inheritedNestingLevel = 0,
+			inheritedCallNestingLevel = 2,
+			ignoreMarker = false,
+			settings,
+			// currentPageKey,
+			// fieldsData,
+		} = args;
+		let { fieldsData } = args;
 
-    let children = Array.from(parent.childNodes);
-    let newFieldKey = fieldId; // 👌
+		let children = Array.from(parent.childNodes);
+		let newFieldKey = fieldId; // 👌
 
-    if (!children.length) return newFieldKey;
+		if (!children.length) return newFieldKey;
 
-    if (
-      parent.classList.contains('_root')
-    ) {
-      childrenIteration({
-        ...args,
-        parent: parent.querySelector('._content'),
-        fieldsData,
-      });
+		if (
+			parent.classList.contains('_root')
+		) {
+			childrenIteration({
+				...args,
+				parent: parent.querySelector('._content'),
+				fieldsData,
+			});
 
-      return newFieldKey;
-    }
+			return newFieldKey;
+		}
 
-    if (settings.allowedTypes.text) {
-      children = checkNestingText(parent, children, ignoreMarker);
-    }
+		if (settings.allowedTypes.text) {
+			children = checkNestingText(parent, children, ignoreMarker);
+		}
 
-    children.forEach((child, childIndex) => {
-      let currentNestingLevel = inheritedNestingLevel + 1;
-      let currentCallNestingLevel = inheritedCallNestingLevel;
-      const { nodeName } = child;
-      args.child = child;
+		children.forEach((child, childIndex) => {
+			let currentNestingLevel = inheritedNestingLevel + 1;
+			let currentCallNestingLevel = inheritedCallNestingLevel;
+			const { nodeName } = child;
+			args.child = child;
 
-      if (
-        nodeName === 'UL'
-        || nodeName === 'OL'
-        || nodeName === 'LI'
-        || checkNodeContainsIgnoreClasses(child, settings.ignoreClasses)
-        || ignoreMarker
-      ) {
+			if (
+				nodeName === 'UL'
+				|| nodeName === 'OL'
+				|| nodeName === 'LI'
+				|| checkNodeContainsIgnoreClasses(child, settings.ignoreClasses)
+				|| ignoreMarker
+			) {
+				childrenIteration({
+					...args,
+					parent: child,
+					fieldId: newFieldKey,
+					inheritedNestingLevel: currentNestingLevel,
+					inheritedCallNestingLevel: currentCallNestingLevel,
+					ignoreMarker: true,
+					fieldsData,
+				});
+			} else if (nodeName === '#text' && child.textContent.replace(/\s+/g, '') !== '') { // if its just text
+				newFieldKey += 1;
 
-        childrenIteration({
-          ...args,
-          parent: child,
-          fieldId: newFieldKey,
-          inheritedNestingLevel: currentNestingLevel,
-          inheritedCallNestingLevel: currentCallNestingLevel,
-          ignoreMarker: true,
-          fieldsData,
-        });
-      }
+				if (parent.nodeName === 'A' && inheritedLinkTextVarCall) {
+					child.textContent = inheritedLinkTextVarCall;
+				} else if (settings.allowedTypes.text) {
+					createTextField({
+						...args,
+						fieldKey: newFieldKey,
+						nestingLevel: currentNestingLevel,
+						callNestingLevel: currentCallNestingLevel,
+						store,
+					});
 
-      else if (nodeName === '#text' && child.textContent.replace(/\s+/g, '') !== '') { // if its just text
-        newFieldKey += 1;
+					fieldsData = store.getState().fieldsData;
+				}
+			} else if (nodeName === 'svg' && settings.allowedTypes.icons) {
+				createPhpIcon({
+					child,
+					nestingLevel: currentNestingLevel,
+					store,
+				});
 
-        if (parent.nodeName === 'A' && inheritedLinkTextVarCall) {
-          child.textContent = inheritedLinkTextVarCall;
-        } else if (settings.allowedTypes.text) {
-          createTextField({
-            ...args,
-            fieldKey: newFieldKey,
-            nestingLevel: currentNestingLevel,
-            callNestingLevel: currentCallNestingLevel,
-            store,
-          });
+				fieldsData = store.getState().fieldsData;
+			} else if (nodeName === 'A') {
+				newFieldKey += 1;
+				currentNestingLevel += 1;
+				let newGroupKeys;
+				let varName;
+				let textVarCall;
 
-          fieldsData = store.getState().fieldsData;
-        }
-      }
-      else if (nodeName === 'svg' && settings.allowedTypes.icons) {
-        createPhpIcon({
-          child,
-          nestingLevel: currentNestingLevel,
-          store,
-        });
+				if (settings.allowedTypes.links) {
+					const { fieldVarName } = createGroupField({
+						...args,
+						fieldKey: newFieldKey,
+						callNestingLevel: currentCallNestingLevel,
+						nestingLevel: currentNestingLevel,
+						store,
+						fieldsData,
+					});
 
-        fieldsData = store.getState().fieldsData;
-      }
+					varName = fieldVarName;
 
-      else if (nodeName === 'A') {
-        newFieldKey += 1;
-        currentNestingLevel += 1;
-        let newGroupKeys;
-        let varName;
-        let textVarCall;
+					newGroupKeys = [...groupKeys, newFieldKey];
+					currentCallNestingLevel = currentNestingLevel;
+					newFieldKey += 1;
 
-        if (settings.allowedTypes.links) {
-          const { fieldVarName } = createGroupField({
-            ...args,
-            fieldKey: newFieldKey,
-            callNestingLevel: currentCallNestingLevel,
-            nestingLevel: currentNestingLevel,
-            store,
-            fieldsData,
-          });
+					fieldsData = store.getState().fieldsData;
 
-          varName = fieldVarName;
+					const { linkTextVarCall } = createLinkField({
+						...args,
+						fieldKey: newFieldKey,
+						nestingLevel: currentNestingLevel,
+						callNestingLevel: currentCallNestingLevel,
+						inheritedVarName: fieldVarName,
+						groupKeys: newGroupKeys,
+						fieldsData,
+						store,
+					});
 
-          newGroupKeys = [...groupKeys, newFieldKey];
-          currentCallNestingLevel = currentNestingLevel;
-          newFieldKey += 1;
+					textVarCall = linkTextVarCall;
 
-          fieldsData = store.getState().fieldsData;
+					fieldsData = store.getState().fieldsData;
+				}
 
-          const { linkTextVarCall } = createLinkField({
-            ...args,
-            fieldKey: newFieldKey,
-            nestingLevel: currentNestingLevel,
-            callNestingLevel: currentCallNestingLevel,
-            inheritedVarName: fieldVarName,
-            groupKeys: newGroupKeys,
-            fieldsData,
-            store,
-          });
+				newFieldKey = childrenIteration({
+					...args,
 
-          textVarCall = linkTextVarCall;
+					parent: child,
+					fieldId: newFieldKey,
+					groupKeys: newGroupKeys || groupKeys,
 
-          fieldsData = store.getState().fieldsData;
-        }
+					inheritedVarName: varName || inheritedVarName,
+					inheritedLinkTextVarCall: textVarCall || inheritedLinkTextVarCall,
+					inheritedNestingLevel: currentNestingLevel,
+					inheritedCallNestingLevel: currentCallNestingLevel,
+					fieldsData,
+				});
+			} else if (nodeName === 'PICTURE') {
+				if (settings.allowedTypes.pictures) {
+					newFieldKey += 1;
+					createPictureField({
+						...args,
+						fieldKey: newFieldKey,
+						nestingLevel: currentNestingLevel,
+						callNestingLevel: currentCallNestingLevel,
+						pictureBrickKey: store.getState().pictureBrickFieldKey,
+						store,
+					});
+					fieldsData = store.getState().fieldsData;
+				}
+			} else if (nodeName === 'IMG' && settings.allowedTypes.images) {
+				newFieldKey += 1;
 
-        newFieldKey = childrenIteration({
-          ...args,
+				createImgField({
+					...args,
+					fieldKey: newFieldKey,
+					nestingLevel: currentNestingLevel,
+					callNestingLevel: currentCallNestingLevel,
+					store,
+				});
 
-          parent: child,
-          fieldId: newFieldKey,
-          groupKeys: newGroupKeys || groupKeys,
+				fieldsData = store.getState().fieldsData;
+			} else {
+				newFieldKey = childrenIteration({
+					...args,
+					parent: child,
+					fieldId: newFieldKey,
+					inheritedNestingLevel: currentNestingLevel,
+					inheritedCallNestingLevel: currentCallNestingLevel,
+					fieldsData,
+				});
+			}
 
-          inheritedVarName: varName || inheritedVarName,
-          inheritedLinkTextVarCall: textVarCall || inheritedLinkTextVarCall,
-          inheritedNestingLevel: currentNestingLevel,
-          inheritedCallNestingLevel: currentCallNestingLevel,
-          fieldsData,
-        });
-      }
+			child.before(`\n${getTabChar(currentNestingLevel)}`);
+			if (childIndex === children.length - 1) child.after(`\n${getTabChar(currentNestingLevel - 1)}`);
+		});
 
-      else if (nodeName === 'PICTURE') {
-        if (settings.allowedTypes.pictures) {
-          newFieldKey += 1;
-          createPictureField({
-            ...args,
-            fieldKey: newFieldKey,
-            nestingLevel: currentNestingLevel,
-            callNestingLevel: currentCallNestingLevel,
-            pictureBrickKey: store.getState().pictureBrickFieldKey,
-            store,
-          });
-          fieldsData = store.getState().fieldsData;
-        }
-      }
+		return newFieldKey;
+	};
 
-      else if (nodeName === 'IMG' && settings.allowedTypes.images) {
-        newFieldKey += 1;
+	const separateSections = async ($sectionsNodes) => {
+		let {
+			fieldKeyCounter,
+			fieldsData,
+			currentPageKey,
+			settings,
+		} = await store.getState();
 
-        createImgField({
-          ...args,
-          fieldKey: newFieldKey,
-          nestingLevel: currentNestingLevel,
-          callNestingLevel: currentCallNestingLevel,
-          store,
-        });
+		let currentFieldKey = fieldKeyCounter + 1;
 
-        fieldsData = store.getState().fieldsData;
-      }
+		$sectionsNodes.forEach(($sectionNode, index) => {
+			let classList = Object.values($sectionNode.classList);
+			if (classList.length) {
+				classList = classList.filter((str) => (// remove unnesessary clasess
+					!str.includes('section')
+					&& !str.includes('state')
+					&& !str.includes('mod')
+				) || str.includes('_section'));
+			}
 
-      else {
-        newFieldKey = childrenIteration({
-          ...args,
-          parent: child,
-          fieldId: newFieldKey,
-          inheritedNestingLevel: currentNestingLevel,
-          inheritedCallNestingLevel: currentCallNestingLevel,
-          fieldsData,
-        });
-      }
+			let sectionSuggestedName;
+			let sectionLabel;
 
-      child.before(`\n${getTabChar(currentNestingLevel)}`);
-      if (childIndex === children.length - 1) child.after(`\n${getTabChar(currentNestingLevel - 1)}`);
-    });
+			if (settings.sectionsPreset[currentFieldKey + 1]) {
+				sectionSuggestedName = settings.sectionsPreset[currentFieldKey + 1].sectionLabel;
+				sectionLabel = settings.sectionsPreset[currentFieldKey + 1].sectionLabel;
+			} else {
+				if (classList[0]) {
+					// eslint-disable-next-line prefer-destructuring
+					sectionSuggestedName = classList[0]; // match first valid class
+					sectionLabel = toUpperFirstLetter(sectionSuggestedName); // get section name
+				} else {
+					sectionSuggestedName = `section_${index + 1}`;
+					sectionLabel = `Section ${index + 1}`;
+				}
+			}
 
-    return newFieldKey;
-  };
+			fieldsData = produce(fieldsData, draft => {
+				draft[currentPageKey].fields[currentFieldKey] = createFieldConfig({
+					type: 'tab',
+					label: sectionLabel,
+					fieldId: currentFieldKey,
+					suggestedName: sectionSuggestedName,
+				});
+			});
 
-  const separateSections = async ($sectionsNodes) => {
-    let {
-      fieldKeyCounter,
-      fieldsData,
-      currentPageKey,
-      settings,
-    } = await store.getState();
+			fieldsData = produce(fieldsData, draft => {
+				draft[currentPageKey].fields[currentFieldKey + 1] = createFieldConfig({
+					type: 'group',
+					fieldName: sectionSuggestedName,
+					fieldId: currentFieldKey + 1,
+					section: $sectionNode,
+					sectionLabel,
+					suggestedName: sectionSuggestedName,
+					varsInitializated: false,
+					fieldNames: {},
+					groupSubFields: {},
+				});
+			});
 
-    let currentFieldKey = fieldKeyCounter + 1;
+			store.dispatch({
+				type: 'UPDATE_FIELDS_DATA',
+				value: fieldsData,
+			});
 
-    $sectionsNodes.forEach(($sectionNode, index) => {
-      let classList = Object.values($sectionNode.classList);
-      if (classList.length) {
-        classList = classList.filter((str) => // remove unnesessary clasess
-          (
-            !str.includes('section')
-            && !str.includes('state')
-            && !str.includes('mod')
-          ) || str.includes('_section')
-        );
-      }
+			const { root, contentBlock } = createVarsRoot({ isSectionVars: true });
+			const sectionInner = $sectionNode.innerHTML;
 
-      let sectionSuggestedName;
-      let sectionLabel;
+			$sectionNode.innerHTML = '';
+			contentBlock.insertAdjacentHTML('afterbegin', sectionInner);
+			$sectionNode.append(root);
 
-      if (settings.sectionsPreset[currentFieldKey + 1]) {
-        sectionSuggestedName = settings.sectionsPreset[currentFieldKey + 1].sectionLabel;
-        sectionLabel = settings.sectionsPreset[currentFieldKey + 1].sectionLabel;
-      } else {
-        if (classList[0]) {
-          sectionSuggestedName = classList[0]; // match first valid class
-          sectionLabel = toUpperFirstLetter(sectionSuggestedName); // get section name
-        } else {
-          sectionSuggestedName = `section_${index + 1}`;
-          sectionLabel = `Section ${index + 1}`;
-        }
-      }
+			const newFieldKey = childrenIteration({
+				parent: $sectionNode,
+				section: $sectionNode,
+				callNestingLevel: 2,
+				groupKeys: [currentFieldKey + 1],
+				currentPageKey,
+				fieldsData,
+				settings,
+			});
 
-      fieldsData = produce(fieldsData, draft => {
-        draft[currentPageKey].fields[currentFieldKey] = createFieldConfig({
-          type: 'tab',
-          label: sectionLabel,
-          fieldId: currentFieldKey,
-          suggestedName: sectionSuggestedName,
-        });
-      });
+			removeAllRoots($sectionNode);
 
-      fieldsData = produce(fieldsData, draft => {
-        draft[currentPageKey].fields[currentFieldKey + 1] = createFieldConfig({
-          type: 'group',
-          fieldName: sectionSuggestedName,
-          fieldId: currentFieldKey + 1,
-          section: $sectionNode,
-          sectionLabel,
-          suggestedName: sectionSuggestedName,
-          varsInitializated: false,
-          fieldNames: {},
-          groupSubFields: {},
-        });
-      });
+			const phpOutput = $sectionNode
+				.outerHTML
+				.replace(/&lt;/gi, '<')
+				.replace(/&gt;/gi, '>')
+				.replace(/-->/gi, '')
+				.replace(/!--/gi, '');
 
-      store.dispatch({
-        type: 'UPDATE_FIELDS_DATA',
-        value: fieldsData,
-      });
+			fieldsData = store.getState().fieldsData;
+			fieldsData = produce(fieldsData, draft => {
+				draft[currentPageKey].fields[currentFieldKey + 1].phpOutput = phpOutput;
+			});
 
-      const {root, contentBlock } = createVarsRoot({ isSectionVars: true, });
-      const sectionInner = $sectionNode.innerHTML;
+			store.dispatch({
+				type: 'UPDATE_FIELDS_DATA',
+				value: fieldsData,
+			});
 
-      $sectionNode.innerHTML = '';
-      contentBlock.insertAdjacentHTML('afterbegin', sectionInner);
-      $sectionNode.append(root);
+			currentFieldKey = newFieldKey + 1;
 
-      const newFieldKey = childrenIteration({
-        parent: $sectionNode,
-        section: $sectionNode,
-        callNestingLevel: 2,
-        groupKeys: [currentFieldKey + 1],
-        currentPageKey,
-        fieldsData,
-        settings,
-      });
+			setTimeout(() => {
+				console.log(store.getState()); //!
+			}, 3000);
+		});
 
-      removeAllRoots($sectionNode);
+		store.dispatch({
+			type: 'SET_FIELD_KEY_COUNTER',
+			value: currentFieldKey,
+		});
+	};
 
-      const phpOutput = $sectionNode
-        .outerHTML
-          .replace(/&lt;/gi, '<')
-          .replace(/&gt;/gi, '>')
-          .replace(/-->/gi, '')
-          .replace(/!--/gi, '');
+	let compileDebouce;
 
-      fieldsData = store.getState().fieldsData;
-      fieldsData = produce(fieldsData, draft => {
-        draft[currentPageKey].fields[currentFieldKey + 1].phpOutput = phpOutput;
-      });
+	const debounce = (cb) => {
+		clearTimeout(compileDebouce);
+		compileDebouce = setTimeout(() => {
+			cb();
+		}, 200);
+	};
 
-      store.dispatch({
-        type: 'UPDATE_FIELDS_DATA',
-        value: fieldsData,
-      });
+	const compile = (value) => debounce(() => {
+		setMainInputValue(value);
 
-      currentFieldKey = newFieldKey + 1;
+		store.dispatch({
+			type: 'CLEAN_PAGE_FIELDS',
+		});
 
-      setTimeout(() => {
-        console.log(store.getState()); //!
-      }, 3000);
-    });
+		if (value === '') return;
 
-    store.dispatch({
-      type: 'SET_FIELD_KEY_COUNTER',
-      value: currentFieldKey,
-    });
-  };
+		const DOM = document.createElement('div');
+		DOM.innerHTML = value;
 
-  let compileDebouce;
+		const $sectionsNodes = DOM.querySelectorAll('section');
 
-  const debounce = (cb) => {
-    clearTimeout(compileDebouce);
-    compileDebouce = setTimeout(() => {
-      cb();
-    }, 200);
-  };
+		separateSections($sectionsNodes);
+	});
 
-  const compile = (value) => debounce(() => {
-    setMainInputValue(value);
+	useEffect(() => {
+		store.dispatch({
+			type: 'CREATE_PAGE_FIELD',
+		});
 
-    store.dispatch({
-      type: 'CLEAN_PAGE_FIELDS',
-    });
+		store.dispatch({
+			type: 'CREATE_PICTURE_BRICK_FIELD',
+		});
 
-    if (value === '') return;
+		store.dispatch({
+			type: 'SET_FIELD_KEY_COUNTER',
+		});
 
-    const DOM = document.createElement('div');
-    DOM.innerHTML = value;
+		compile(mainInputValue || defaultInputValue);
+	}, []);
 
-    const $sectionsNodes = DOM.querySelectorAll('section');
-
-    separateSections($sectionsNodes);
-  });
-
-  useEffect(() => {
-    store.dispatch({
-      type: 'CREATE_PAGE_FIELD',
-    });
-
-    store.dispatch({
-      type: 'CREATE_PICTURE_BRICK_FIELD',
-    });
-
-    store.dispatch({
-      type: 'SET_FIELD_KEY_COUNTER',
-    });
-
-    compile(mainInputValue || defaultInputValue);
-  }, []);
-
-  return {
-    compile,
-    mainInputValue,
-  }
+	return {
+		compile,
+		mainInputValue,
+	};
 };
 
 export default useConverter;

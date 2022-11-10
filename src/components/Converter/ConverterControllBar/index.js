@@ -1,5 +1,5 @@
-import ConverterControllBar from './ConverterControllBar.js';
+import ConverterControllBar from './ConverterControllBar';
 
 export {
-  ConverterControllBar,
+	ConverterControllBar,
 };

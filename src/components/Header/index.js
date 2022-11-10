@@ -1,5 +1,5 @@
-import Header from "./Header.js";
+import Header from './Header';
 
 export {
-  Header,
+	Header,
 };

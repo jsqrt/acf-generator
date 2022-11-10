@@ -1,5 +1,5 @@
 import ConverterTabs from './ConverterTabs';
 
 export {
-  ConverterTabs,
+	ConverterTabs,
 };
