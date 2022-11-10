@@ -1,0 +1,103 @@
+{
+	"env": {
+		"browser": true,
+		"es2021": true
+	},
+	"extends": [
+		"plugin:react/recommended",
+		"airbnb"
+	],
+	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"ecmaFeatures": {
+			"jsx": true
+		},
+		"ecmaVersion": "latest",
+		"sourceType": "module"
+	},
+	"plugins": [
+		"react",
+		"@typescript-eslint"
+	],
+	"rules": {
+		"import/extensions": [
+			"error",
+			"ignorePackages",
+			{
+				"js": "never",
+				"jsx": "never",
+				"ts": "never",
+				"tsx": "never"
+			}
+		],
+		"react/jsx-filename-extension": [
+			1,
+			{
+				"extensions": [
+					".tsx",
+					".js"
+				]
+			}
+		],
+		"indent": [
+			"error",
+			"tab",
+			{
+				"SwitchCase": 1
+			}
+		],
+		"no-tabs": 0,
+		"arrow-parens": "off",
+		"no-restricted-globals": "off",
+		// "linebreak-style": ["error", "windows"],
+		"linebreak-style": "off",
+		"react/prop-types": 0,
+		"no-alert": "off",
+		"prefer-const": "off",
+		"react/jsx-indent": [
+			2,
+			"tab"
+		],
+		"react/jsx-indent-props": [
+			2,
+			"tab"
+		],
+		"jsx-a11y/anchor-is-valid": "off",
+		"jsx-a11y/label-has-associated-control": "off",
+		"import/prefer-default-export": "off",
+		"arrow-body-style": "off",
+		"jsx-a11y/media-has-caption": "off",
+		"max-len": "off",
+		"react/jsx-props-no-spreading": "off",
+		"no-unused-vars": "warn",
+		"react/no-array-index-key": "off",
+		"camelcase": "warn",
+		"import/no-extraneous-dependencies": "off",
+		"react/function-component-definition": [
+			2,
+			{
+				"namedComponents": "arrow-function"
+			}
+		],
+		"no-nested-ternary": "off",
+		"radix": "off",
+		"no-else-return": "off",
+		"react/destructuring-assignment": "off",
+		"no-lonely-if": "off"
+	},
+	"settings": {
+		"import/resolver": {
+			"node": {
+				"paths": [
+					"src"
+				],
+				"extensions": [
+					".js",
+					".jsx",
+					".ts",
+					".tsx"
+				]
+			}
+		}
+	}
+}
