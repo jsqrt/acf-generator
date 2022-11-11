@@ -1,4 +1,4 @@
-Plugin for convert html code to php markup with included Advanced Custom Fields.
+Plugin for converting HTML to PHP markup with included Advanced Custom Fields.
 
 - Easy configurateble convertation.
 - Generates PHP markup with replaced text contents, sources etc. by ACF commands (the_field(); or get_field();).
@@ -6,5 +6,4 @@ Plugin for convert html code to php markup with included Advanced Custom Fields.
 - Grouping fields and checking for the contents of variables for existence.
 - Smart auto-naming of field id.
 
-** ACF is CMS "WordPress" plugin "Advanced Custom Field", designed to change the content of the site.
-** Developed by Shavel Heorhii. Github - https://github.com/lovesossa.
+** Developed by Heorhii Shavel. Github - https://github.com/lovesossa.
