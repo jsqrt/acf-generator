@@ -13,6 +13,7 @@ export const defineTextFieldLabel = (parent) => {
 	Array.from(parent.classList).forEach((str) => {
 		if (str.includes('subtitle')) fieldName = 'subtitle';
 		else if (str.includes('title')) fieldName = 'title';
+		else if (str.includes('heading')) fieldName = 'heading';
 		else if (str.includes('descr')) fieldName = 'descr';
 		else if (str.includes('text')) fieldName = 'text';
 		else if (str.includes('name')) fieldName = 'name';

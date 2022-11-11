@@ -1,5 +1,7 @@
 //------------------------------------------------------------layout
 .header {
+	display: flex;
+	align-items: center;
 	// position: fixed;
 	// top: 0;
 	// left: 0;
@@ -20,6 +22,21 @@
 	font-size: 2.2rem;
 	color: $white;
 	font-weight: 500;
+}
+
+.header_repo {
+	display: flex;
+	align-items: center;
+	font-size: 1.8rem;
+	color: $white;
+	margin-left: auto;
+
+	.icon {
+		display: block;
+		width: 2.2rem;
+		height: 2.2rem;
+		margin-right: 1rem;
+	}
 }
 
 //------------------------------------------------------------layout###
