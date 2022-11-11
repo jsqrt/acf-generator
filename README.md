@@ -1,4 +1,6 @@
-Plugin for converting HTML to PHP markup with included Advanced Custom Fields.
+# ACF Generator
+
+### Plugin for converting HTML to PHP markup with included Advanced Custom Fields.
 
 - Easy configurateble convertation.
 - Generates PHP markup with replaced text contents, sources etc. by ACF commands (the_field(); or get_field();).
