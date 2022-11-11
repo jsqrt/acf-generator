@@ -6,4 +6,4 @@ Plugin for converting HTML to PHP markup with included Advanced Custom Fields.
 - Grouping fields and checking for the contents of variables for existence.
 - Smart auto-naming of field id.
 
-** Developed by Heorhii Shavel. Github - https://github.com/lovesossa.
+*Developed by Heorhii Shavel. Github - https://github.com/lovesossa.*
