@@ -1,6 +1,6 @@
 # ACF Generator
 
-### Last Version - https://acf-generator.glivera.com
+https://acf-generator.glivera.com
 
 ### Plugin for converting HTML to PHP markup with included Advanced Custom Fields.
 
