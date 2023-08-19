@@ -14,4 +14,3 @@
 3. Code must be valid for correct work
 4. Great if your сlass names contain semantic keywords, like: title, descr, bg, btn, etc.
 
-*Developed by [Heorhii Shavel](https://github.com/lovesossa) with [Glivera-Team](https://github.com/glivera-team)*
